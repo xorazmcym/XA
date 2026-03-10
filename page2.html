@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1877">
+<title>贵州省碳监测数据分析共享服务平台 · 指标数据溯源</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#020d1a;--panel:rgba(3,22,48,0.88);--panel2:rgba(5,28,65,0.75);
+  --blue:#00e5ff;--blue2:#1a9fd4;--blue3:rgba(0,229,255,0.12);
+  --dim:#4a7a9b;--text:#cce8ff;--text2:#8dc8e8;--white:#fff;
+  --border:rgba(0,229,255,0.28);--border2:rgba(20,100,180,0.35);
+  --gold:#f0c040;--green:#36d399;--orange:#ff9a3c;--purple:#b39dff;
+}
+html,body{width:1877px;height:919px;overflow:hidden;font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text);transform-origin:top left;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,200,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,255,0.022) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0;}
+
+.hdr{display:flex;align-items:center;justify-content:space-between;height:54px;padding:0 22px;background:linear-gradient(180deg,rgba(4,26,58,0.97),rgba(2,16,38,0.94));border-bottom:1px solid var(--border);position:relative;z-index:10;}
+.hdr-logo{font-size:22px;font-weight:700;letter-spacing:2px;color:var(--white);text-shadow:0 0 20px rgba(0,229,255,0.55);}
+.hdr-nav{display:flex;gap:3px;}
+.ntab{padding:7px 20px;font-size:13px;letter-spacing:1px;color:var(--dim);border:1px solid var(--border2);background:rgba(8,35,72,0.5);cursor:pointer;transition:all .2s;}
+.ntab.on{color:var(--blue);border-color:var(--blue);background:rgba(0,200,255,0.08);box-shadow:0 0 14px rgba(0,229,255,0.2);}
+.avatar{width:34px;height:34px;border-radius:50%;border:1px solid var(--blue2);background:rgba(10,40,90,0.8);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--blue);}
+
+.pgtitle-bar{height:52px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;background:rgba(2,14,36,0.7);border-bottom:1px solid var(--border2);position:relative;z-index:9;flex-shrink:0;}
+
+.search-wrap{position:relative;width:320px;}
+.search-input{width:100%;height:34px;background:rgba(3,18,48,0.9);border:1px solid var(--blue2);color:var(--white);font-size:13px;padding:0 36px 0 12px;outline:none;font-family:'Noto Sans SC',sans-serif;transition:border-color .2s;}
+.search-input:focus{border-color:var(--blue);box-shadow:0 0 10px rgba(0,229,255,0.2);}
+.search-icon{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--blue2);font-size:14px;pointer-events:none;}
+.search-dropdown{position:absolute;top:38px;left:0;right:0;background:rgba(4,22,52,0.97);border:1px solid var(--border);z-index:100;display:none;}
+.search-dropdown.show{display:block;}
+.search-item{padding:8px 12px;font-size:12px;color:var(--text2);cursor:pointer;border-bottom:1px solid rgba(0,150,200,0.1);transition:background .15s;}
+.search-item:hover{background:rgba(0,200,255,0.08);color:var(--blue);}
+
+.quick-chips{display:flex;align-items:center;gap:8px;}
+.chip-label{font-size:11px;color:var(--dim);margin-right:4px;}
+.chip{padding:4px 12px;font-size:11px;border:1px solid rgba(0,200,255,0.3);background:rgba(0,200,255,0.06);color:var(--text2);cursor:pointer;transition:all .18s;white-space:nowrap;}
+.chip:hover,.chip.on{border-color:var(--blue);background:rgba(0,229,255,0.12);color:var(--blue);}
+
+.main{display:grid;grid-template-columns:220px 320px 1fr;height:calc(919px - 54px - 52px);position:relative;z-index:1;}
+
+.lnav{border-right:1px solid var(--border2);overflow-y:auto;background:rgba(2,14,36,0.6);padding:10px 0;}
+.lnav::-webkit-scrollbar{width:3px;}
+.lnav::-webkit-scrollbar-thumb{background:rgba(0,200,255,0.2);}
+.cat-group{margin-bottom:4px;}
+.cat-header{padding:7px 16px;font-size:11px;font-weight:700;color:var(--blue2);letter-spacing:1px;border-left:2px solid var(--blue2);margin:6px 0 2px 0;background:rgba(0,150,200,0.05);cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
+.cat-header:hover{color:var(--blue);}
+.cat-header .arrow{font-size:9px;transition:transform .2s;}
+.cat-header.open .arrow{transform:rotate(90deg);}
+.cat-items{overflow:hidden;transition:max-height .25s ease;}
+.cat-item{padding:6px 16px 6px 22px;font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;border-left:2px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cat-item:hover{color:var(--white);background:rgba(0,200,255,0.06);}
+.cat-item.active{color:var(--blue);border-left-color:var(--blue);background:rgba(0,229,255,0.08);}
+
+.midcol{border-right:1px solid var(--border2);overflow-y:auto;padding:10px 8px;background:rgba(2,16,40,0.5);}
+.midcol::-webkit-scrollbar{width:3px;}
+.midcol::-webkit-scrollbar-thumb{background:rgba(0,200,255,0.2);}
+.mid-cat-title{font-size:11px;color:var(--blue2);font-weight:700;letter-spacing:1px;padding:4px 8px 8px;border-bottom:1px solid rgba(0,200,255,0.1);margin-bottom:8px;}
+.ind-card{padding:10px 12px;margin-bottom:6px;background:var(--panel2);border:1px solid var(--border2);cursor:pointer;transition:all .18s;position:relative;}
+.ind-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:2px;background:var(--border2);transition:background .18s;}
+.ind-card:hover{border-color:rgba(0,200,255,0.4);background:rgba(5,30,70,0.85);}
+.ind-card:hover::before,.ind-card.active::before{background:var(--blue);}
+.ind-card.active{border-color:var(--blue);background:rgba(0,50,120,0.45);box-shadow:0 0 12px rgba(0,229,255,0.12);}
+.ind-name{font-size:13px;font-weight:500;color:var(--white);margin-bottom:4px;}
+.ind-card.active .ind-name{color:var(--blue);}
+.ind-desc{font-size:11px;color:var(--dim);line-height:1.5;margin-bottom:6px;}
+.ind-footer{display:flex;align-items:center;justify-content:space-between;}
+.ind-unit{font-size:10px;color:var(--blue2);background:rgba(0,200,255,0.08);padding:1px 8px;border:1px solid rgba(0,200,255,0.2);}
+.ind-btn{font-size:10px;color:var(--blue2);cursor:pointer;}
+.ind-btn:hover{color:var(--blue);}
+
+.detcol{overflow-y:auto;padding:16px 20px;background:rgba(2,12,32,0.4);}
+.detcol::-webkit-scrollbar{width:4px;}
+.detcol::-webkit-scrollbar-thumb{background:rgba(0,200,255,0.2);}
+.det-hd{display:flex;align-items:flex-start;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid rgba(0,200,255,0.15);margin-bottom:16px;}
+.det-title{font-size:20px;font-weight:700;color:var(--white);letter-spacing:1px;}
+.det-unit-badge{padding:3px 14px;font-size:12px;border:1px solid var(--blue2);color:var(--blue2);background:rgba(0,200,255,0.07);margin-top:4px;display:inline-block;}
+.det-sec{margin-bottom:18px;}
+.det-sec-title{font-size:11px;font-weight:700;color:var(--blue2);letter-spacing:1.5px;text-transform:uppercase;display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.det-sec-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(0,200,255,0.25),transparent);}
+.def-box{background:rgba(0,30,70,0.5);border:1px solid rgba(0,150,200,0.25);border-left:3px solid var(--blue2);padding:12px 14px;font-size:13px;color:var(--text);line-height:1.7;}
+.formula-box{background:rgba(0,20,55,0.7);border:1px solid rgba(0,229,255,0.3);padding:14px 16px;font-size:13px;color:var(--white);line-height:1.9;position:relative;}
+.formula-box::before{content:'公式';position:absolute;top:-1px;left:14px;font-size:10px;color:var(--blue);background:rgba(0,20,55,0.95);padding:0 8px;letter-spacing:1px;}
+.formula-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.f-item{background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.35);padding:2px 10px;font-size:12px;color:var(--blue);white-space:nowrap;}
+.f-op{font-size:15px;color:var(--gold);font-weight:700;padding:0 2px;}
+.f-result{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,200,255,0.15);}
+.f-result-name{font-size:13px;font-weight:600;color:var(--blue);text-shadow:0 0 10px rgba(0,229,255,0.4);}
+.det-table{width:100%;border-collapse:collapse;font-size:12px;}
+.det-table th{padding:7px 12px;background:rgba(0,50,120,0.5);color:var(--blue2);font-weight:500;text-align:left;border:1px solid rgba(0,150,200,0.2);letter-spacing:.5px;}
+.det-table td{padding:8px 12px;border:1px solid rgba(0,100,160,0.15);color:var(--text);vertical-align:top;line-height:1.5;}
+.det-table tr:nth-child(even) td{background:rgba(0,30,70,0.3);}
+.det-table tr:hover td{background:rgba(0,50,120,0.3);}
+.src-badge{display:inline-block;padding:1px 8px;font-size:10px;border:1px solid rgba(54,211,153,0.4);color:var(--green);background:rgba(54,211,153,0.07);margin-right:4px;margin-bottom:3px;}
+
+/* ── LINEAGE GRAPH ── */
+.lineage-wrap{background:rgba(0,15,45,0.7);border:1px solid rgba(0,200,255,0.2);padding:0;position:relative;overflow:hidden;}
+.lineage-toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;border-bottom:1px solid rgba(0,200,255,0.12);
+  background:rgba(0,20,55,0.6);
+}
+.lineage-legend{display:flex;align-items:center;gap:16px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--dim);}
+.legend-dot{width:8px;height:8px;border-radius:1px;}
+.lineage-canvas{width:100%;overflow-x:auto;overflow-y:hidden;padding:20px 16px 16px;}
+.lineage-canvas::-webkit-scrollbar{height:3px;}
+.lineage-canvas::-webkit-scrollbar-thumb{background:rgba(0,200,255,0.2);}
+.lineage-svg{display:block;}
+
+/* node types in SVG — colors controlled by JS */
+@keyframes scan{0%{transform:translateY(-3%);opacity:.4}100%{transform:translateY(105%);opacity:0}}
+.scan{position:fixed;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.2),transparent);animation:scan 10s linear infinite;pointer-events:none;z-index:200;}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--dim);gap:12px;}
+.empty-icon{font-size:40px;opacity:.3;}
+.empty-txt{font-size:13px;letter-spacing:.5px;}
+</style>
+</head>
+<body>
+<div class="scan"></div>
+
+<div class="hdr">
+  <div class="hdr-logo">贵州省碳监测数据分析共享服务平台</div>
+  <div class="hdr-nav">
+    <div class="ntab">区域碳排放</div>
+    <div class="ntab">行业碳排放</div>
+    <div class="ntab">企业碳排放</div>
+  </div>
+  <div class="avatar">TOT</div>
+</div>
+
+<div class="pgtitle-bar">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div style="font-size:16px;color:var(--blue2);cursor:pointer">⌂</div>
+    <div style="font-size:11px;color:var(--dim);">当前位置：</div>
+    <div style="font-size:11px;color:var(--blue2);cursor:pointer">贵州用户</div>
+    <div style="font-size:11px;color:var(--dim)">›</div>
+    <div style="font-size:11px;color:var(--text)">指标数据溯源</div>
+  </div>
+  <div class="search-wrap">
+    <input class="search-input" id="searchInput" placeholder="搜索指标名称、关键词…" oninput="onSearch(this.value)" onblur="setTimeout(()=>closeSearch(),200)">
+    <div class="search-icon">⌕</div>
+    <div class="search-dropdown" id="searchDropdown"></div>
+  </div>
+  <div class="quick-chips">
+    <span class="chip-label">常用指标：</span>
+    <div class="chip" onclick="selectIndicator(0)">全社会碳排放</div>
+    <div class="chip" onclick="selectIndicator(1)">电力平均二氧化碳排放因子</div>
+    <div class="chip" onclick="selectIndicator(3)">发电碳排放</div>
+    <div class="chip" onclick="selectIndicator(4)">单位度电碳排放</div>
+    <div class="chip" onclick="selectIndicator(2)">区域碳排放强度</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="lnav" id="lnav"></div>
+  <div class="midcol" id="midcol">
+    <div class="empty-state"><div class="empty-icon">☰</div><div class="empty-txt">请从左侧选择指标分类</div></div>
+  </div>
+  <div class="detcol" id="detcol">
+    <div class="empty-state"><div class="empty-icon">◈</div><div class="empty-txt">请选择指标查看溯源详情</div></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+const INDICATORS = [
+  {
+    id:0, name:'全社会碳排放', unit:'万吨', cat:'碳排放总量',
+    def:'当期区域由于生产活动等产生的总碳排放量。',
+    formula:{ parts:['能源活动碳排放','＋','工业生产过程碳排放'], result:'全社会碳排放' },
+    params:[
+      {name:'能源活动碳排放', desc:'因燃烧化石燃料等能源利用活动而产生的CO₂排放'},
+      {name:'工业生产过程碳排放', desc:'非能源燃烧的化学反应产生的CO₂排放'},
+    ],
+    sources:[
+      {name:'能源活动碳排放', sys:'系统计算', time:'2025'},
+      {name:'工业生产过程碳排放', sys:'系统计算', time:'2025'},
+    ],
+    // 血缘图定义：节点 + 有向边
+    lineage:{
+      nodes:[
+        // type: source=原始数据源, transform=加工节点, result=结果指标
+        {id:'n0', label:'能源活动碳排放', type:'source', value:'18,432 万吨', sys:'系统计算'},
+        {id:'n1', label:'工业生产过程碳排放', type:'source', value:'3,218 万吨', sys:'系统计算'},
+        {id:'n2', label:'全社会碳排放', type:'result', value:'21,650 万吨', sys:'本平台计算'},
+      ],
+      edges:[
+        {from:'n0', to:'n2', label:'求和输入'},
+        {from:'n1', to:'n2', label:'求和输入'},
+      ]
+    }
+  },
+  {
+    id:1, name:'电力平均二氧化碳排放因子', unit:'tCO₂/MWh', cat:'电力系统指标',
+    def:'从区域整体出发，输送的每1千瓦时电所携带的碳排放量，是衡量电力系统碳强度的重要指标。',
+    formula:{
+      parts:['（本地发电碳排放','＋','购入碳排放）','÷','（发电量＋购入电量）'],
+      result:'电力平均二氧化碳排放因子'
+    },
+    params:[
+      {name:'本地发电碳排放', desc:'含煤电、气电的化石能源发电所产生的碳排放'},
+      {name:'购入碳排放', desc:'从省内及省外电网购入电力对应的间接碳排放'},
+      {name:'发电量', desc:'区域内全部发电机组的发电总量'},
+      {name:'购入电量', desc:'从外部电网购入的电力总量'},
+    ],
+    sources:[
+      {name:'发电量', sys:'电网管理平台（统计系统）', time:'2025'},
+      {name:'购入电量', sys:'电网管理平台（统计系统）', time:'2025'},
+      {name:'化石能源排放因子', sys:'国家发改委', time:'2025'},
+    ],
+    lineage:{
+      nodes:[
+        {id:'n0', label:'煤电发电量', type:'source', value:'1,240 亿kWh', sys:'电网管理平台'},
+        {id:'n1', label:'气电发电量', type:'source', value:'380 亿kWh', sys:'电网管理平台'},
+        {id:'n2', label:'化石能源排放因子', type:'source', value:'0.8135 tCO₂/MWh', sys:'国家发改委'},
+        {id:'n3', label:'本地发电碳排放', type:'transform', value:'13,247 万吨', sys:'乘积计算'},
+        {id:'n4', label:'购入碳排放', type:'source', value:'2,841 万吨', sys:'系统计算'},
+        {id:'n5', label:'总碳排放（分子）', type:'transform', value:'16,088 万吨', sys:'求和计算'},
+        {id:'n6', label:'发电量＋购入电量', type:'transform', value:'2,280 亿kWh', sys:'求和计算'},
+        {id:'n7', label:'电力平均CO₂排放因子', type:'result', value:'0.7057 tCO₂/MWh', sys:'本平台计算'},
+      ],
+      edges:[
+        {from:'n0', to:'n3', label:'× 排放因子'},
+        {from:'n1', to:'n3', label:'× 排放因子'},
+        {from:'n2', to:'n3', label:'作为乘数'},
+        {from:'n3', to:'n5', label:'求和输入'},
+        {from:'n4', to:'n5', label:'求和输入'},
+        {from:'n0', to:'n6', label:'求和输入'},
+        {from:'n1', to:'n6', label:'求和输入'},
+        {from:'n5', to:'n7', label:'÷ 作为分子'},
+        {from:'n6', to:'n7', label:'÷ 作为分母'},
+      ]
+    }
+  },
+  {
+    id:2, name:'区域碳排放强度', unit:'吨/万元', cat:'碳排放效率',
+    def:'单位GDP所产生的二氧化碳排放量，反映区域经济活动的碳效率。',
+    formula:{ parts:['全社会碳排放','÷','地区生产总值（GDP）'], result:'区域碳排放强度' },
+    params:[
+      {name:'全社会碳排放', desc:'当期区域全部生产活动产生的总碳排放量'},
+      {name:'地区生产总值', desc:'按现价或可比价计算的区域GDP'},
+    ],
+    sources:[
+      {name:'全社会碳排放', sys:'系统计算', time:'2025'},
+      {name:'地区生产总值', sys:'外部数据平台-国家统计局', time:'2025'},
+    ],
+    lineage:{
+      nodes:[
+        {id:'n0', label:'全社会碳排放', type:'source', value:'21,650 万吨', sys:'系统计算'},
+        {id:'n1', label:'地区生产总值', type:'source', value:'21,978.2 亿元', sys:'国家统计局'},
+        {id:'n2', label:'区域碳排放强度', type:'result', value:'0.986 吨/万元', sys:'本平台计算'},
+      ],
+      edges:[
+        {from:'n0', to:'n2', label:'÷ 作为被除数'},
+        {from:'n1', to:'n2', label:'÷ 作为除数'},
+      ]
+    }
+  },
+  {
+    id:3, name:'发电碳排放（化石能源）', unit:'万吨', cat:'碳排放总量',
+    def:'发电厂生产电能过程中，因消耗化石能源（煤、气）而产生的二氧化碳排放总量。',
+    formula:{ parts:['（煤电发电量＋气电发电量）','×','全国化石能源电力CO₂排放因子'], result:'发电碳排放' },
+    params:[
+      {name:'煤电发电量', desc:'区域内燃煤发电机组的发电量'},
+      {name:'气电发电量', desc:'区域内燃气发电机组的发电量'},
+      {name:'全国化石能源电力CO₂排放因子', desc:'国家发改委发布的全国化石能源发电碳排放因子'},
+    ],
+    sources:[
+      {name:'煤电发电量', sys:'电网管理平台（统计系统）', time:'2025'},
+      {name:'气电发电量', sys:'电网管理平台（统计系统）', time:'2025'},
+      {name:'化石能源电力CO₂排放因子', sys:'国家发改委', time:'2025'},
+    ],
+    lineage:{
+      nodes:[
+        {id:'n0', label:'煤电发电量', type:'source', value:'1,240 亿kWh', sys:'电网管理平台'},
+        {id:'n1', label:'气电发电量', type:'source', value:'380 亿kWh', sys:'电网管理平台'},
+        {id:'n2', label:'化石能源发电量（合计）', type:'transform', value:'1,620 亿kWh', sys:'求和计算'},
+        {id:'n3', label:'全国化石能源CO₂排放因子', type:'source', value:'0.8135 tCO₂/MWh', sys:'国家发改委'},
+        {id:'n4', label:'发电碳排放', type:'result', value:'13,179 万吨', sys:'本平台计算'},
+      ],
+      edges:[
+        {from:'n0', to:'n2', label:'求和输入'},
+        {from:'n1', to:'n2', label:'求和输入'},
+        {from:'n2', to:'n4', label:'× 排放因子'},
+        {from:'n3', to:'n4', label:'作为乘数'},
+      ]
+    }
+  },
+  {
+    id:4, name:'单位度电碳排放', unit:'tCO₂/MWh', cat:'电力系统指标',
+    def:'每使用1千瓦时电量所产生的碳排放量，从电力消费层面衡量用电侧碳强度。',
+    formula:{ parts:['（本地发电碳排放','＋','购入碳排放','－','流出碳排放）','÷','全社会用电量'], result:'单位度电碳排放' },
+    params:[
+      {name:'本地发电碳排放', desc:'区域内化石能源发电所产生的碳排放'},
+      {name:'购入碳排放', desc:'从外部购入电力对应的间接碳排放'},
+      {name:'流出碳排放', desc:'向外输出电力对应的间接碳排放'},
+      {name:'全社会用电量', desc:'区域内全部用电端的电力消费总量'},
+    ],
+    sources:[
+      {name:'发电碳排放', sys:'系统计算', time:'2025'},
+      {name:'购入碳排放', sys:'系统计算', time:'2025'},
+      {name:'全社会用电量', sys:'电网管理平台（统计系统）', time:'2025'},
+    ],
+    lineage:{
+      nodes:[
+        {id:'n0', label:'本地发电碳排放', type:'source', value:'13,179 万吨', sys:'系统计算'},
+        {id:'n1', label:'购入碳排放', type:'source', value:'2,841 万吨', sys:'系统计算'},
+        {id:'n2', label:'流出碳排放', type:'source', value:'1,203 万吨', sys:'系统计算'},
+        {id:'n3', label:'净碳排放（分子）', type:'transform', value:'14,817 万吨', sys:'加减计算'},
+        {id:'n4', label:'全社会用电量', type:'source', value:'2,098 亿kWh', sys:'电网管理平台'},
+        {id:'n5', label:'单位度电碳排放', type:'result', value:'0.7062 tCO₂/MWh', sys:'本平台计算'},
+      ],
+      edges:[
+        {from:'n0', to:'n3', label:'加法输入'},
+        {from:'n1', to:'n3', label:'加法输入'},
+        {from:'n2', to:'n3', label:'减法输入'},
+        {from:'n3', to:'n5', label:'÷ 作为被除数'},
+        {from:'n4', to:'n5', label:'÷ 作为除数'},
+      ]
+    }
+  },
+  {
+    id:5, name:'能源活动碳排放', unit:'万吨', cat:'碳排放总量',
+    def:'因燃烧化石燃料等能源利用活动而产生的二氧化碳排放，是全社会碳排放的主要组成部分。',
+    formula:{ parts:['能源消费实物量','×','各能源折标煤系数','×','各能源标煤碳排放因子'], result:'能源活动碳排放' },
+    params:[
+      {name:'能源消费实物量', desc:'各类能源实际消费量'},
+      {name:'各能源折标煤系数', desc:'将不同能源折算为标准煤的换算系数'},
+      {name:'各能源标煤碳排放因子', desc:'单位标准煤对应的碳排放量'},
+    ],
+    sources:[
+      {name:'能源消费实物量', sys:'中国能源统计年鉴', time:'2025'},
+      {name:'各能源折标煤系数', sys:'国家发改委', time:'2025'},
+      {name:'各能源标煤碳排放因子', sys:'国家发改委', time:'2025'},
+    ],
+    lineage:{
+      nodes:[
+        {id:'n0', label:'能源消费实物量', type:'source', value:'多种能源', sys:'中国能源统计年鉴'},
+        {id:'n1', label:'折标煤系数', type:'source', value:'按能源类型', sys:'国家发改委'},
+        {id:'n2', label:'标准煤消费量', type:'transform', value:'15,840 万吨标煤', sys:'乘积计算'},
+        {id:'n3', label:'标煤碳排放因子', type:'source', value:'1.163 tCO₂/吨标煤', sys:'国家发改委'},
+        {id:'n4', label:'能源活动碳排放', type:'result', value:'18,432 万吨', sys:'本平台计算'},
+      ],
+      edges:[
+        {from:'n0', to:'n2', label:'× 折标煤系数'},
+        {from:'n1', to:'n2', label:'作为乘数'},
+        {from:'n2', to:'n4', label:'× 排放因子'},
+        {from:'n3', to:'n4', label:'作为乘数'},
+      ]
+    }
+  },
+  {
+    id:6, name:'非化石能源发电占比', unit:'%', cat:'能源结构',
+    def:'非化石能源（核能、水能、风能、太阳能等）发电量占区域总发电量的比重，反映能源结构清洁化程度。',
+    formula:{ parts:['非化石能源发电量','÷','总发电量','×','100%'], result:'非化石能源发电占比' },
+    params:[
+      {name:'非化石能源发电量', desc:'核电、水电、风电、光伏等清洁能源的发电总量'},
+      {name:'总发电量', desc:'区域内全部发电机组的发电总量'},
+    ],
+    sources:[
+      {name:'非化石能源发电量', sys:'电网管理平台（统计系统）', time:'2025'},
+      {name:'总发电量', sys:'电网管理平台（统计系统）', time:'2025'},
+    ],
+    lineage:{
+      nodes:[
+        {id:'n0', label:'水电发电量', type:'source', value:'980 亿kWh', sys:'电网管理平台'},
+        {id:'n1', label:'风电发电量', type:'source', value:'245 亿kWh', sys:'电网管理平台'},
+        {id:'n2', label:'光伏发电量', type:'source', value:'88 亿kWh', sys:'电网管理平台'},
+        {id:'n3', label:'非化石能源发电量', type:'transform', value:'1,313 亿kWh', sys:'求和计算'},
+        {id:'n4', label:'总发电量', type:'source', value:'2,933 亿kWh', sys:'电网管理平台'},
+        {id:'n5', label:'非化石能源发电占比', type:'result', value:'44.77%', sys:'本平台计算'},
+      ],
+      edges:[
+        {from:'n0', to:'n3', label:'求和输入'},
+        {from:'n1', to:'n3', label:'求和输入'},
+        {from:'n2', to:'n3', label:'求和输入'},
+        {from:'n3', to:'n5', label:'÷ 作为被除数'},
+        {from:'n4', to:'n5', label:'÷ 作为除数'},
+      ]
+    }
+  },
+];
+
+const CATEGORIES = [
+  { name:'碳排放总量', ids:[0,3,5] },
+  { name:'电力系统指标', ids:[1,4] },
+  { name:'碳排放效率', ids:[2] },
+  { name:'能源结构', ids:[6] },
+];
+
+let curCat = null, curInd = null;
+
+// ═══════════════════════════════════════════
+// LINEAGE SVG — 真实血缘图
+// ═══════════════════════════════════════════
+/*
+  布局逻辑：
+  - 按节点类型和拓扑顺序分层（column）
+  - 列间距固定，列内节点均匀分布
+  - 边上标注语义标签（不是运算符）
+  - 节点展示：名称 + 实际数值（模拟数据）+ 来源系统
+*/
+function buildLineageSVG(lineage){
+  const nodes = lineage.nodes;
+  const edges = lineage.edges;
+
+  // Assign columns via topological sort
+  const nodeMap = {};
+  nodes.forEach(n => nodeMap[n.id] = { ...n, col: 0 });
+
+  // Compute column = max(predecessors' col) + 1
+  const inEdgesOf = {};
+  nodes.forEach(n => inEdgesOf[n.id] = []);
+  edges.forEach(e => inEdgesOf[e.to].push(e.from));
+
+  function getCol(id, visited = new Set()) {
+    if (visited.has(id)) return 0;
+    visited.add(id);
+    const preds = inEdgesOf[id];
+    if (!preds.length) return 0;
+    return 1 + Math.max(...preds.map(p => getCol(p, new Set(visited))));
+  }
+  nodes.forEach(n => { nodeMap[n.id].col = getCol(n.id); });
+
+  // Group by column
+  const cols = {};
+  Object.values(nodeMap).forEach(n => {
+    if (!cols[n.col]) cols[n.col] = [];
+    cols[n.col].push(n);
+  });
+  const colCount = Object.keys(cols).length;
+
+  // Node dimensions
+  const NW = 168, NH = 64, HGAP = 80, VGAP = 22;
+  const colW = NW + HGAP;
+
+  // Canvas size
+  const maxPerCol = Math.max(...Object.values(cols).map(c => c.length));
+  const W = colCount * colW + HGAP;
+  const H = maxPerCol * (NH + VGAP) + VGAP + 40;
+
+  // Assign positions
+  Object.entries(cols).forEach(([ci, nds]) => {
+    const x = parseInt(ci) * colW + HGAP / 2;
+    const totalH = nds.length * NH + (nds.length - 1) * VGAP;
+    const startY = (H - totalH) / 2;
+    nds.forEach((nd, i) => {
+      nodeMap[nd.id].x = x;
+      nodeMap[nd.id].y = startY + i * (NH + VGAP);
+    });
+  });
+
+  // Color scheme per type
+  const TYPE_STYLE = {
+    source:    { fill:'rgba(10,40,100,0.75)', stroke:'rgba(26,159,212,0.7)', txtColor:'#8dc8e8', badge:'#1a9fd4', badgeTxt:'来源' },
+    transform: { fill:'rgba(30,20,80,0.75)', stroke:'rgba(179,157,255,0.65)', txtColor:'#c8b8ff', badge:'#8a78d4', badgeTxt:'加工' },
+    result:    { fill:'rgba(0,55,140,0.8)', stroke:'rgba(0,229,255,0.9)', txtColor:'#00e5ff', badge:'#00c8e0', badgeTxt:'结果' },
+  };
+
+  let defs = `<defs>
+    <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="rgba(0,200,255,0.55)"/>
+    </marker>
+    <marker id="arr-purple" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="rgba(179,157,255,0.6)"/>
+    </marker>
+    <filter id="glow-blue" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>`;
+
+  let edgesSVG = '';
+  let labelsSVG = '';
+
+  edges.forEach(e => {
+    const from = nodeMap[e.from], to = nodeMap[e.to];
+    if (!from || !to) return;
+    const fx = from.x + NW, fy = from.y + NH / 2;
+    const tx = to.x, ty = to.y + NH / 2;
+    const cx1 = fx + (tx - fx) * 0.5;
+    const cx2 = tx - (tx - fx) * 0.5;
+
+    // Edge color: purple if going into transform, blue otherwise
+    const isToTransform = to.type === 'transform';
+    const strokeClr = isToTransform ? 'rgba(179,157,255,0.5)' : 'rgba(0,200,255,0.45)';
+    const markerEnd = isToTransform ? 'url(#arr-purple)' : 'url(#arr)';
+
+    edgesSVG += `<path d="M${fx},${fy} C${cx1},${fy} ${cx2},${ty} ${tx},${ty}"
+      stroke="${strokeClr}" stroke-width="1.5" fill="none" stroke-dasharray="5 3"
+      marker-end="${markerEnd}"/>`;
+
+    // Label on edge midpoint
+    const lx = (fx + tx) / 2, ly = (fy + ty) / 2;
+    const lw = Math.min(e.label.length * 8 + 16, 120);
+    labelsSVG += `
+      <rect x="${lx - lw/2}" y="${ly - 10}" width="${lw}" height="18" rx="2"
+        fill="rgba(4,16,44,0.92)" stroke="${isToTransform ? 'rgba(179,157,255,0.35)' : 'rgba(0,200,255,0.25)'}" stroke-width="1"/>
+      <text x="${lx}" y="${ly + 4}" text-anchor="middle" font-size="10"
+        fill="${isToTransform ? '#b39dff' : '#5bc8e8'}" font-family="Noto Sans SC">${e.label}</text>`;
+  });
+
+  let nodesSVG = '';
+  nodes.forEach(n => {
+    const nd = nodeMap[n.id];
+    const s = TYPE_STYLE[nd.type] || TYPE_STYLE.source;
+    const isResult = nd.type === 'result';
+    const filt = isResult ? 'filter="url(#glow-blue)"' : 'filter="url(#glow-soft)"';
+
+    nodesSVG += `
+    <g ${filt}>
+      <rect x="${nd.x}" y="${nd.y}" width="${NW}" height="${NH}" rx="3"
+        fill="${s.fill}" stroke="${s.stroke}" stroke-width="${isResult ? 2 : 1.5}"/>
+      <!-- type badge -->
+      <rect x="${nd.x}" y="${nd.y}" width="28" height="14" rx="2"
+        fill="${s.badge}" opacity="0.85"/>
+      <text x="${nd.x + 14}" y="${nd.y + 10}" text-anchor="middle" font-size="9"
+        fill="#fff" font-family="Noto Sans SC" font-weight="700">${s.badgeTxt}</text>
+      <!-- node name -->
+      <text x="${nd.x + NW/2}" y="${nd.y + 26}" text-anchor="middle" font-size="12"
+        fill="${s.txtColor}" font-family="Noto Sans SC" font-weight="${isResult ? '700' : '500'}">
+        ${nd.label.length > 10 ? nd.label.slice(0, 9) + '…' : nd.label}
+      </text>
+      <!-- value -->
+      <text x="${nd.x + NW/2}" y="${nd.y + 42}" text-anchor="middle" font-size="11"
+        fill="${isResult ? '#fff' : '#a0c8e0'}" font-family="Noto Sans SC" font-weight="${isResult ? '700' : '400'}">
+        ${nd.value || '—'}
+      </text>
+      <!-- sys -->
+      <text x="${nd.x + NW/2}" y="${nd.y + 57}" text-anchor="middle" font-size="9"
+        fill="rgba(100,160,200,0.7)" font-family="Noto Sans SC">
+        ${nd.sys.length > 12 ? nd.sys.slice(0, 11) + '…' : nd.sys}
+      </text>
+    </g>`;
+  });
+
+  return `<svg class="lineage-svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">
+    ${defs}
+    ${edgesSVG}
+    ${labelsSVG}
+    ${nodesSVG}
+  </svg>`;
+}
+
+// ═══════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════
+function renderNav(){
+  const el = document.getElementById('lnav');
+  el.innerHTML = CATEGORIES.map((cat,ci)=>`
+    <div class="cat-group">
+      <div class="cat-header open" id="cathdr-${ci}">
+        ${cat.name}<span class="arrow">▶</span>
+      </div>
+      <div class="cat-items" id="catitems-${ci}">
+        ${cat.ids.map(id=>`<div class="cat-item" id="navitem-${id}" onclick="selectIndicator(${id})">${INDICATORS[id].name}</div>`).join('')}
+      </div>
+    </div>`).join('');
+
+  CATEGORIES.forEach((_,ci)=>{
+    const hdr = document.getElementById('cathdr-'+ci);
+    const items = document.getElementById('catitems-'+ci);
+    items.style.maxHeight = items.scrollHeight+'px';
+    hdr.addEventListener('click', ()=>{
+      hdr.classList.toggle('open');
+      items.style.maxHeight = hdr.classList.contains('open') ? items.scrollHeight+'px' : '0';
+    });
+  });
+}
+
+function renderMiddle(catName){
+  const el = document.getElementById('midcol');
+  const cat = CATEGORIES.find(c=>c.name===catName);
+  if(!cat){ el.innerHTML='<div class="empty-state"><div class="empty-icon">☰</div><div class="empty-txt">请从左侧选择指标分类</div></div>'; return; }
+  el.innerHTML = `<div class="mid-cat-title">${catName} · ${cat.ids.length}个指标</div>`
+    + cat.ids.map(id=>{
+      const ind = INDICATORS[id];
+      return `<div class="ind-card" id="card-${id}" onclick="selectIndicator(${id})">
+        <div class="ind-name">${ind.name}</div>
+        <div class="ind-desc">${ind.def.slice(0,45)}${ind.def.length>45?'…':''}</div>
+        <div class="ind-footer">
+          <span class="ind-unit">${ind.unit}</span>
+          <span class="ind-btn">查看溯源 ›</span>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function renderDetail(ind){
+  const el = document.getElementById('detcol');
+  let formulaHTML = `<div class="formula-line">`;
+  ind.formula.parts.forEach(p=>{
+    if(['＋','－','×','÷'].includes(p)) formulaHTML += `<span class="f-op">${p}</span>`;
+    else formulaHTML += `<span class="f-item">${p}</span>`;
+  });
+  formulaHTML += `</div><div class="f-result"><span style="color:var(--dim);font-size:12px">= </span><span class="f-result-name">${ind.formula.result}</span></div>`;
+
+  const lineageSVG = buildLineageSVG(ind.lineage);
+
+  // Legend
+  const legend = `
+    <div class="lineage-toolbar">
+      <div style="font-size:11px;color:var(--blue2);letter-spacing:.5px">数据血缘图 · 节点显示：名称 / 当前数值 / 数据来源</div>
+      <div class="lineage-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#1a9fd4;border-radius:2px"></div>原始数据源</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#8a78d4;border-radius:2px"></div>加工节点</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00e5ff;border-radius:2px"></div>结果指标</div>
+        <div class="legend-item">
+          <svg width="28" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="rgba(0,200,255,0.5)" stroke-width="1.5" stroke-dasharray="4 2"/><polygon points="20,2 28,5 20,8" fill="rgba(0,200,255,0.55)"/></svg>
+          数据流向
+        </div>
+        <div class="legend-item">
+          <svg width="28" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="rgba(179,157,255,0.5)" stroke-width="1.5" stroke-dasharray="4 2"/><polygon points="20,2 28,5 20,8" fill="rgba(179,157,255,0.6)"/></svg>
+          加工流向
+        </div>
+      </div>
+    </div>`;
+
+  el.innerHTML = `
+    <div class="det-hd">
+      <div>
+        <div class="det-title">${ind.name}</div>
+        <span class="det-unit-badge">单位：${ind.unit}</span>
+      </div>
+      <div style="font-size:11px;color:var(--dim);text-align:right;line-height:1.8">
+        <div>分类：<span style="color:var(--blue2)">${ind.cat}</span></div>
+        <div>序号：<span style="color:var(--blue2)">#${String(ind.id+1).padStart(2,'0')}</span></div>
+      </div>
+    </div>
+    <div class="det-sec">
+      <div class="det-sec-title">指标定义</div>
+      <div class="def-box">${ind.def}</div>
+    </div>
+    <div class="det-sec">
+      <div class="det-sec-title">计算公式</div>
+      <div class="formula-box">${formulaHTML}</div>
+    </div>
+    <div class="det-sec">
+      <div class="det-sec-title">参数说明</div>
+      <table class="det-table">
+        <thead><tr><th style="width:38%">参数名称</th><th>参数说明</th></tr></thead>
+        <tbody>${ind.params.map(p=>`<tr><td><span style="color:var(--blue2)">${p.name}</span></td><td>${p.desc}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>
+    <div class="det-sec">
+      <div class="det-sec-title">数据来源</div>
+      <table class="det-table">
+        <thead><tr><th style="width:38%">数据项</th><th style="width:40%">来源系统</th><th>更新时间</th></tr></thead>
+        <tbody>${ind.sources.map(s=>`<tr><td>${s.name}</td><td><span class="src-badge">⬟</span>${s.sys}</td><td style="color:var(--text2)">${s.time}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>
+    <div class="det-sec">
+      <div class="det-sec-title">数据血缘图</div>
+      <div class="lineage-wrap">
+        ${legend}
+        <div class="lineage-canvas">${lineageSVG}</div>
+      </div>
+    </div>`;
+}
+
+function selectIndicator(id){
+  document.querySelectorAll('.cat-item').forEach(el=>el.classList.remove('active'));
+  const navEl = document.getElementById('navitem-'+id);
+  if(navEl) navEl.classList.add('active');
+  const cat = CATEGORIES.find(c=>c.ids.includes(id));
+  if(cat && cat.name !== curCat){ curCat = cat.name; renderMiddle(curCat); }
+  document.querySelectorAll('.ind-card').forEach(el=>el.classList.remove('active'));
+  setTimeout(()=>{
+    const card = document.getElementById('card-'+id);
+    if(card) card.classList.add('active');
+  }, 30);
+  curInd = id;
+  renderDetail(INDICATORS[id]);
+}
+
+function onSearch(val){
+  const dd = document.getElementById('searchDropdown');
+  if(!val.trim()){ dd.classList.remove('show'); return; }
+  const res = INDICATORS.filter(i=>i.name.includes(val)||i.def.includes(val)||i.cat.includes(val));
+  if(!res.length){ dd.classList.remove('show'); return; }
+  dd.innerHTML = res.map(ind=>`
+    <div class="search-item" onclick="selectIndicator(${ind.id});document.getElementById('searchInput').value='';closeSearch()">
+      <strong>${hlMatch(ind.name,val)}</strong>
+      <span style="color:var(--dim);font-size:10px;margin-left:8px">${ind.cat} · ${ind.unit}</span>
+    </div>`).join('');
+  dd.classList.add('show');
+}
+function hlMatch(t,q){ const i=t.indexOf(q); if(i<0)return t; return t.slice(0,i)+`<em style="color:var(--blue);font-style:normal">${t.slice(i,i+q.length)}</em>`+t.slice(i+q.length); }
+function closeSearch(){ document.getElementById('searchDropdown').classList.remove('show'); }
+
+function autoScale(){ const s=Math.min(window.innerWidth/1877,window.innerHeight/919); document.body.style.transform='scale('+s+')'; }
+autoScale(); window.addEventListener('resize',autoScale);
+
+renderNav();
+setTimeout(()=>selectIndicator(0), 50);
+</script>
+</body>
+</html>
