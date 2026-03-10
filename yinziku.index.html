@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1877">
+<title>贵州省碳监测数据分析共享服务平台 · 因子库</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#020d1a;
+  --panel:rgba(3,22,48,0.88);
+  --panel2:rgba(5,28,65,0.75);
+  --blue:#00e5ff;
+  --blue2:#1a9fd4;
+  --dim:#4a7a9b;
+  --text:#cce8ff;
+  --text2:#8dc8e8;
+  --white:#fff;
+  --border:rgba(0,229,255,0.28);
+  --border2:rgba(20,100,180,0.35);
+  --gold:#f0c040;
+  --green:#36d399;
+  --orange:#ff9f43;
+}
+html,body{width:1877px;height:919px;overflow:hidden;font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text);transform-origin:top left;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,200,255,0.022) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,255,0.022) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0;}
+
+/* ── HEADER ── */
+.hdr{display:flex;align-items:center;justify-content:space-between;height:54px;padding:0 22px;background:linear-gradient(180deg,rgba(4,26,58,0.97),rgba(2,16,38,0.94));border-bottom:1px solid var(--border);position:relative;z-index:10;}
+.hdr-logo{font-size:22px;font-weight:700;letter-spacing:2px;color:var(--white);text-shadow:0 0 20px rgba(0,229,255,0.55);}
+.hdr-nav{display:flex;gap:3px;}
+.ntab{padding:7px 20px;font-size:13px;letter-spacing:1px;color:var(--dim);border:1px solid var(--border2);background:rgba(8,35,72,0.5);cursor:pointer;transition:all .2s;}
+.ntab.on{color:var(--blue);border-color:var(--blue);background:rgba(0,200,255,0.08);box-shadow:0 0 14px rgba(0,229,255,0.2);}
+.avatar{width:34px;height:34px;border-radius:50%;border:1px solid var(--blue2);background:rgba(10,40,90,0.8);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--blue);cursor:pointer;}
+
+/* ── TITLE BAR ── */
+.titlebar{height:46px;padding:0 22px;display:flex;align-items:center;justify-content:space-between;background:rgba(2,14,36,0.7);border-bottom:1px solid var(--border2);position:relative;z-index:9;}
+.bc{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim);}
+.bc-home{font-size:16px;color:var(--blue2);cursor:pointer;line-height:1;}
+.bc-link{color:var(--blue2);cursor:pointer;}
+.bc-link:hover{color:var(--blue);}
+.bc-cur{color:var(--text);}
+.bc-sep{color:var(--dim);}
+
+/* time selector */
+.yr-sel{display:flex;align-items:center;gap:6px;}
+.yr-label{font-size:11px;color:var(--dim);}
+.yr-btn{padding:3px 14px;font-size:11px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:'Noto Sans SC',sans-serif;transition:all .15s;}
+.yr-btn.on{color:var(--blue);border-color:var(--blue);background:rgba(0,229,255,0.07);}
+
+/* ── MAIN LAYOUT ── */
+.main{display:grid;grid-template-columns:240px 1fr 300px;height:calc(919px - 54px - 46px);position:relative;z-index:1;}
+
+/* ── LEFT: FACTOR NAV ── */
+.lnav{border-right:1px solid var(--border2);background:rgba(2,14,36,0.6);padding:12px 0;overflow-y:auto;}
+.lnav::-webkit-scrollbar{width:3px;}
+.lnav::-webkit-scrollbar-thumb{background:rgba(0,200,255,0.2);}
+
+.fgroup{margin-bottom:4px;}
+.fgroup-hdr{
+  padding:8px 14px;font-size:11px;font-weight:700;
+  color:var(--blue2);letter-spacing:1.2px;
+  border-left:2px solid var(--blue2);
+  background:rgba(0,150,200,0.06);
+  margin:8px 0 2px 0;
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;
+}
+.fgroup-hdr:hover{color:var(--blue);}
+.fgroup-hdr .arr{font-size:9px;transition:transform .2s;}
+.fgroup-hdr.open .arr{transform:rotate(90deg);}
+.fgroup-items{overflow:hidden;}
+.fitem{
+  padding:7px 14px 7px 22px;
+  font-size:12px;color:var(--text2);
+  cursor:pointer;transition:all .15s;
+  border-left:2px solid transparent;
+  display:flex;align-items:center;gap:8px;
+}
+.fitem:hover{color:var(--white);background:rgba(0,200,255,0.05);}
+.fitem.active{color:var(--blue);border-left-color:var(--blue);background:rgba(0,229,255,0.07);}
+.fitem-dot{width:5px;height:5px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:background .15s;}
+.fitem.active .fitem-dot{background:var(--blue);box-shadow:0 0 5px var(--blue);}
+
+/* ── CENTER COLUMN ── */
+.ccol{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border2);}
+
+/* chart panel */
+.cpnl{
+  display:flex;flex-direction:column;
+  background:var(--panel);
+  border:1px solid var(--border);
+  position:relative;overflow:hidden;
+  margin:8px 10px 0;
+}
+.cpnl::after{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--blue),transparent);opacity:.45;pointer-events:none;}
+.cpnl:last-child{margin-bottom:8px;}
+
+.phd{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid rgba(0,200,255,0.1);flex-shrink:0;}
+.phd-left{display:flex;align-items:center;gap:8px;}
+.pbar{width:3px;height:13px;background:var(--blue);box-shadow:0 0 6px var(--blue);flex-shrink:0;}
+.phd-title{font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;}
+.phd-sub{font-size:10px;color:var(--dim);margin-left:4px;}
+.tbg{display:flex;gap:2px;}
+.tb{padding:2px 8px;font-size:10px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:'Noto Sans SC',sans-serif;white-space:nowrap;}
+.tb.on{color:var(--blue);border-color:var(--blue);background:rgba(0,229,255,0.07);}
+
+.chart-area{flex:1;min-height:0;padding:6px 10px 4px;}
+
+/* top panel bigger, bottom panel smaller */
+.cpnl.top{flex:1.6;min-height:0;}
+.cpnl.bot{flex:1;min-height:0;}
+
+/* ── RIGHT COLUMN ── */
+.rcol{display:flex;flex-direction:column;padding:10px 10px;gap:10px;overflow-y:auto;background:rgba(2,12,32,0.4);}
+.rcol::-webkit-scrollbar{width:3px;}
+.rcol::-webkit-scrollbar-thumb{background:rgba(0,200,255,0.2);}
+
+.rpnl{background:var(--panel2);border:1px solid var(--border2);position:relative;overflow:hidden;flex-shrink:0;}
+.rpnl::after{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--blue2),transparent);opacity:.4;pointer-events:none;}
+.rphd{padding:7px 12px;border-bottom:1px solid rgba(0,200,255,0.1);font-size:11px;font-weight:700;color:var(--blue2);letter-spacing:1px;display:flex;align-items:center;gap:8px;}
+.rphd::before{content:'';width:3px;height:11px;background:var(--blue2);flex-shrink:0;}
+.rpbody{padding:12px;}
+
+/* stat items */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.stat-item{
+  background:rgba(0,30,70,0.6);
+  border:1px solid rgba(0,150,200,0.2);
+  padding:10px 12px;
+  position:relative;overflow:hidden;
+}
+.stat-item::before{content:'';position:absolute;top:0;left:0;bottom:0;width:2px;}
+.stat-item.max::before{background:var(--orange);}
+.stat-item.min::before{background:var(--green);}
+.stat-item.avg::before{background:var(--blue);}
+.stat-item.latest::before{background:var(--gold);}
+.stat-lbl{font-size:10px;color:var(--dim);letter-spacing:.5px;margin-bottom:5px;}
+.stat-val{font-size:22px;font-weight:700;letter-spacing:.5px;line-height:1;}
+.stat-item.max .stat-val{color:var(--orange);}
+.stat-item.min .stat-val{color:var(--green);}
+.stat-item.avg .stat-val{color:var(--blue);}
+.stat-item.latest .stat-val{color:var(--gold);}
+.stat-unit{font-size:11px;color:var(--dim);margin-left:3px;}
+.stat-year{font-size:10px;color:var(--dim);margin-top:4px;}
+
+/* full-width stat (3rd item spans both) */
+.stat-full{grid-column:1/-1;}
+
+/* trend sparkline */
+.spark-wrap{margin-top:10px;background:rgba(0,20,55,0.5);border:1px solid rgba(0,150,200,0.15);padding:8px;}
+.spark-title{font-size:10px;color:var(--dim);letter-spacing:.5px;margin-bottom:6px;}
+
+/* desc box */
+.desc-box{
+  background:rgba(0,30,70,0.45);
+  border:1px solid rgba(0,150,200,0.2);
+  border-left:3px solid var(--blue2);
+  padding:12px;
+  font-size:12px;color:var(--text);line-height:1.8;
+}
+.desc-tag{display:inline-block;padding:1px 8px;font-size:10px;border:1px solid rgba(0,200,255,0.3);color:var(--blue2);background:rgba(0,200,255,0.07);margin-bottom:8px;letter-spacing:.5px;}
+
+/* src row */
+.src-row{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:8px;border-top:1px solid rgba(0,150,200,0.12);font-size:10px;color:var(--dim);}
+.src-badge{color:var(--green);border:1px solid rgba(54,211,153,0.35);padding:1px 8px;background:rgba(54,211,153,0.06);}
+
+/* tooltip */
+.tooltip{position:fixed;background:rgba(4,22,55,0.97);border:1px solid var(--border);padding:7px 12px;font-size:11px;color:var(--text);pointer-events:none;z-index:999;display:none;min-width:120px;}
+.tt-year{font-size:10px;color:var(--dim);margin-bottom:3px;}
+.tt-val{color:var(--blue);font-size:14px;font-weight:700;}
+.tt-unit{color:var(--dim);font-size:10px;margin-left:3px;}
+
+/* scan */
+@keyframes scan{0%{transform:translateY(-3%);opacity:.4}100%{transform:translateY(105%);opacity:0}}
+.scan{position:fixed;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.2),transparent);animation:scan 10s linear infinite;pointer-events:none;z-index:200;}
+</style>
+</head>
+<body>
+<div class="scan"></div>
+<div class="tooltip" id="tooltip"><div class="tt-year" id="tt-year"></div><div><span class="tt-val" id="tt-val"></span><span class="tt-unit" id="tt-unit"></span></div></div>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-logo">贵州省碳监测数据分析共享服务平台</div>
+  <div class="hdr-nav">
+    <div class="ntab">区域碳排放</div>
+    <div class="ntab">行业碳排放</div>
+    <div class="ntab">企业碳排放</div>
+  </div>
+  <div class="avatar" title="个人中心">TOT</div>
+</div>
+
+<!-- TITLE BAR -->
+<div class="titlebar">
+  <div class="bc">
+    <span class="bc-home" onclick="alert('返回首页')" title="首页">⌂</span>
+    <span class="bc-sep">当前位置：</span>
+    <span class="bc-link" onclick="alert('返回首页')">贵州用户</span>
+    <span class="bc-sep">›</span>
+    <span class="bc-cur">因子库</span>
+  </div>
+
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- LEFT -->
+<div class="lnav" id="lnav"></div>
+
+<!-- CENTER -->
+<div class="ccol">
+  <div class="cpnl top">
+    <div class="phd">
+      <div class="phd-left">
+        <div class="pbar"></div>
+        <span class="phd-title" id="trend-title">因子发展趋势</span>
+        <span class="phd-sub" id="trend-sub">— 单位发电煤耗</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:10px;color:var(--dim)">起始年份</span>
+        <select id="yr-from" onchange="updateYearRange()" style="background:rgba(3,18,48,0.92);border:1px solid var(--blue2);color:var(--blue);font-size:11px;padding:2px 6px;outline:none;font-family:'Noto Sans SC',sans-serif;">
+          <option value="2020" selected>2020</option>
+          <option value="2021">2021</option>
+          <option value="2022">2022</option>
+          <option value="2023">2023</option>
+          <option value="2024">2024</option>
+        </select>
+        <span style="font-size:10px;color:var(--dim)">至</span>
+        <select id="yr-to" onchange="updateYearRange()" style="background:rgba(3,18,48,0.92);border:1px solid var(--blue2);color:var(--blue);font-size:11px;padding:2px 6px;outline:none;font-family:'Noto Sans SC',sans-serif;">
+          <option value="2022">2022</option>
+          <option value="2023">2023</option>
+          <option value="2024">2024</option>
+          <option value="2025" selected>2025</option>
+        </select>
+      </div>
+    </div>
+    <div class="chart-area"><svg id="trend-svg" width="100%" height="100%"></svg></div>
+  </div>
+
+  <div class="cpnl bot">
+    <div class="phd">
+      <div class="phd-left">
+        <div class="pbar"></div>
+        <span class="phd-title">基础数据构成</span>
+        <span class="phd-sub" id="comp-sub">— 构成分析</span>
+      </div>
+
+    </div>
+    <div class="chart-area"><svg id="comp-svg" width="100%" height="100%"></svg></div>
+  </div>
+</div>
+
+<!-- RIGHT -->
+<div class="rcol" id="rcol">
+  <!-- filled by JS -->
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ═══════════════ DATA ═══════════════
+const YEARS_ALL = [2020,2021,2022,2023,2024,2025];
+let YEARS = YEARS_ALL.slice(-5);
+
+const FACTORS = {
+  groups: [
+    {
+      name: '发电因子',
+      items: [
+        {
+          id: 'coal_heat',
+          name: '单位发电煤耗',
+          unit: 'gce/kWh',
+          def: '火电机组每发出1千瓦时电量所消耗的标准煤重量，反映火电机组能源利用效率水平。数值越低，表明机组效率越高，碳排放越少。',
+          source: '电网管理平台（统计系统）',
+          data: [295, 291, 288, 284, 281, 278],
+          comps: {
+            labels: ['煤电发电量', '气电发电量'],
+            colors: ['#1565c0','rgba(0,200,255,0.4)'],
+            series: [
+              [2200, 2280, 2350, 2430, 2500, 2560],
+              [250, 265, 280, 295, 310, 323],
+            ]
+          }
+        },
+        {
+          id: 'coal_gen',
+          name: '煤电发电量',
+          unit: '亿千瓦时',
+          def: '区域内燃煤机组在统计期内的总发电量，是衡量煤电规模及煤电碳排放的基础数据。',
+          source: '电网管理平台（统计系统）',
+          data: [2200, 2280, 2350, 2430, 2500, 2560],
+          comps: {
+            labels: ['煤炭消耗量', '发电小时数'],
+            colors: ['#1a5fa8','rgba(0,200,255,0.35)'],
+            series: [
+              [730, 755, 780, 810, 840, 866],
+              [4920, 4950, 4970, 5000, 5020, 5037],
+            ]
+          }
+        },
+        {
+          id: 'gas_gen',
+          name: '气电发电量',
+          unit: '亿千瓦时',
+          def: '区域内燃气机组在统计期内的总发电量，气电相对煤电排放强度更低，是优化能源结构的重要组成部分。',
+          source: '电网管理平台（统计系统）',
+          data: [250, 265, 280, 295, 310, 323],
+          comps: {
+            labels: ['天然气消耗量', '气电装机容量'],
+            colors: ['#1a7a8a','rgba(0,229,255,0.35)'],
+            series: [
+              [77, 82, 86, 91, 96, 100],
+              [168, 178, 190, 200, 212, 222],
+            ]
+          }
+        },
+      ]
+    },
+    {
+      name: '电力平均二氧化碳排放因子',
+      items: [
+        {
+          id: 'ef_avg',
+          name: '电力平均CO₂排放因子',
+          unit: 'tCO₂/MWh',
+          def: '从区域整体出发，输送的每1千瓦时电所携带的碳排放量，是衡量电力系统碳强度的核心指标，也是计算间接碳排放的重要基础因子。',
+          source: '国家发改委',
+          data: [0.79, 0.76, 0.72, 0.68, 0.65, 0.62],
+          comps: {
+            labels: ['化石能源发电量', '流入电力', '流出电力', '用电量'],
+            colors: ['#1565c0','rgba(0,200,255,0.5)','rgba(240,192,64,0.5)','rgba(54,211,153,0.45)'],
+            series: [
+              [2450, 2545, 2630, 2725, 2810, 2882],
+              [455, 470, 485, 500, 515, 528],
+              [290, 305, 320, 335, 350, 363],
+              [2615, 2710, 2795, 2890, 2975, 3047],
+            ]
+          }
+        },
+        {
+          id: 'fossil_gen',
+          name: '化石能源发电量',
+          unit: '亿千瓦时',
+          def: '区域内全部化石能源（煤电、气电）机组的发电总量，是计算电力平均碳排放因子的核心分子项。',
+          source: '电网管理平台（统计系统）',
+          data: [2450, 2545, 2630, 2725, 2810, 2882],
+          comps: {
+            labels: ['煤电发电量', '气电发电量'],
+            colors: ['#1565c0','rgba(0,200,255,0.4)'],
+            series: [
+              [2200, 2280, 2350, 2430, 2500, 2560],
+              [250, 265, 280, 295, 310, 323],
+            ]
+          }
+        },
+        {
+          id: 'power_in',
+          name: '流入电力',
+          unit: '亿千瓦时',
+          def: '统计期内从省外或区外调入贵州省电网的电力总量，影响本省电力供应结构与碳排放水平。',
+          source: '电网管理平台（统计系统）',
+          data: [455, 470, 485, 500, 515, 528],
+          comps: {
+            labels: ['省外煤电调入', '省外清洁能源调入'],
+            colors: ['#1a4a8a','rgba(0,200,255,0.38)'],
+            series: [
+              [322, 330, 339, 348, 357, 365],
+              [133, 140, 146, 152, 158, 163],
+            ]
+          }
+        },
+        {
+          id: 'power_out',
+          name: '流出电力',
+          unit: '亿千瓦时',
+          def: '统计期内从贵州省电网向省外或区外输出的电力总量，是计算本省电力平均碳排放因子的重要调节项。',
+          source: '电网管理平台（统计系统）',
+          data: [290, 305, 320, 335, 350, 363],
+          comps: {
+            labels: ['向广东输出', '向其他省份输出'],
+            colors: ['#0d6b8a','rgba(0,200,255,0.38)'],
+            series: [
+              [218, 229, 240, 251, 263, 273],
+              [72, 76, 80, 84, 87, 90],
+            ]
+          }
+        },
+        {
+          id: 'elec_cons',
+          name: '用电量',
+          unit: '亿千瓦时',
+          def: '区域内全社会统计期内的电力消费总量，包括工业、商业、居民等各类用电，是计算单位度电碳排放的分母项。',
+          source: '电网管理平台（统计系统）',
+          data: [2615, 2710, 2795, 2890, 2975, 3047],
+          comps: {
+            labels: ['工业用电', '商业用电', '居民用电'],
+            colors: ['#1565c0','rgba(0,200,255,0.48)','rgba(54,211,153,0.4)'],
+            series: [
+              [1700, 1761, 1817, 1878, 1934, 1982],
+              [549, 569, 587, 607, 625, 640],
+              [366, 380, 391, 405, 416, 425],
+            ]
+          }
+        },
+      ]
+    }
+  ]
+};
+
+// ═══════════════ STATE ═══════════════
+let curFactor = FACTORS.groups[0].items[0];
+let yearCount = 5;
+
+// getYears and getSlice defined below in YEAR RANGE section
+
+// ═══════════════ NAV ═══════════════
+function renderNav(){
+  const el = document.getElementById('lnav');
+  el.innerHTML = FACTORS.groups.map((g,gi)=>`
+    <div class="fgroup">
+      <div class="fgroup-hdr open" id="ghdr-${gi}">
+        ${g.name}<span class="arr">▶</span>
+      </div>
+      <div class="fgroup-items" id="gitems-${gi}">
+        ${g.items.map(f=>`
+          <div class="fitem${f.id===curFactor.id?' active':''}" id="fi-${f.id}" onclick="selectFactor('${f.id}')">
+            <span class="fitem-dot"></span>${f.name}
+          </div>`).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  // group header toggle
+  FACTORS.groups.forEach((g,gi)=>{
+    const hdr = document.getElementById('ghdr-'+gi);
+    const items = document.getElementById('gitems-'+gi);
+    items.style.maxHeight = items.scrollHeight+'px';
+    hdr.addEventListener('click',()=>{
+      hdr.classList.toggle('open');
+      items.style.maxHeight = hdr.classList.contains('open') ? items.scrollHeight+'px' : '0';
+    });
+  });
+}
+
+function selectFactor(id){
+  FACTORS.groups.forEach(g=>g.items.forEach(f=>{
+    if(f.id===id) curFactor=f;
+  }));
+  // update nav
+  document.querySelectorAll('.fitem').forEach(el=>el.classList.remove('active'));
+  const fi = document.getElementById('fi-'+id);
+  if(fi) fi.classList.add('active');
+  // redraw
+  renderAll();
+}
+
+// ═══════════════ CHARTS ═══════════════
+function drawTrendLine(svgId, data, years, unit, color){
+  const svg = document.getElementById(svgId);
+  if(!svg) return;
+  const W = svg.parentElement.clientWidth||600;
+  const H = svg.parentElement.clientHeight||180;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+
+  const pL=44, pR=12, pT=14, pB=28;
+  const cW=W-pL-pR, cH=H-pT-pB;
+  const n=data.length;
+  const mn=Math.min(...data), mx=Math.max(...data);
+  const pad=(mx-mn)*0.15||mn*0.1;
+  const yMin=mn-pad, yMax=mx+pad;
+
+  const xS=i=>pL+(i/(n-1))*cW;
+  const yS=v=>pT+cH-((v-yMin)/(yMax-yMin))*cH;
+
+  const uid='t'+Math.random().toString(36).slice(2,7);
+  let h=`<defs>
+    <linearGradient id="${uid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity=".25"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity=".02"/>
+    </linearGradient>
+  </defs>`;
+
+  // grid
+  const ticks=4;
+  for(let i=0;i<=ticks;i++){
+    const y=pT+(cH/ticks)*i;
+    const v=yMax-((yMax-yMin)/ticks)*i;
+    h+=`<line x1="${pL}" y1="${y}" x2="${W-pR}" y2="${y}" stroke="rgba(90,140,180,0.13)" stroke-width=".6"/>`;
+    const vStr = v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(v<2?2:0);
+    h+=`<text x="${pL-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#7ab8d4" font-family="Noto Sans SC">${vStr}</text>`;
+  }
+
+  // area
+  let area=`M${xS(0)},${pT+cH}`;
+  data.forEach((v,i)=>area+=` L${xS(i)},${yS(v)}`);
+  area+=` L${xS(n-1)},${pT+cH} Z`;
+  h+=`<path d="${area}" fill="url(#${uid})"/>`;
+
+  // line
+  let line=`M${xS(0)},${yS(data[0])}`;
+  data.forEach((v,i)=>{if(i>0)line+=` L${xS(i)},${yS(v)}`;});
+  h+=`<path d="${line}" stroke="${color}" stroke-width="2" fill="none"/>`;
+
+  // dots + labels
+  data.forEach((v,i)=>{
+    const cx=xS(i), cy=yS(v);
+    h+=`<circle cx="${cx}" cy="${cy}" r="3.5" fill="${color}" stroke="rgba(2,14,36,0.8)" stroke-width="1.5"
+      style="cursor:pointer"
+      onmouseenter="showTip(event,'${years[i]}年','${v}','${unit}')"
+      onmouseleave="hideTip()"/>`;
+    // value label on point
+    const lblY = cy-8 < pT+4 ? cy+14 : cy-8;
+    h+=`<text x="${cx}" y="${lblY}" text-anchor="middle" font-size="9" fill="${color}" opacity=".8">${v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(v<2?2:0)}</text>`;
+    h+=`<text x="${cx}" y="${H-6}" text-anchor="middle" font-size="10" fill="#7ab8d4" font-family="Noto Sans SC">${years[i]}</text>`;
+  });
+
+  svg.innerHTML=h;
+}
+
+const STACK_COLORS=['#1565c0','rgba(0,200,255,0.55)','rgba(240,192,64,0.55)','rgba(54,211,153,0.5)'];
+
+function drawStackBar(svgId, seriesData, labels, years, colors){
+  const svg = document.getElementById(svgId);
+  if(!svg) return;
+  const W=svg.parentElement.clientWidth||600;
+  const H=svg.parentElement.clientHeight||140;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+
+  const pL=44, pR=10, pT=12, pB=28;
+  const cW=W-pL-pR, cH=H-pT-pB;
+  const n=years.length;
+  const totals=years.map((_,i)=>seriesData.reduce((s,ser)=>s+ser[i],0));
+  const yMax=Math.max(...totals)*1.1;
+  const gW=cW/n, bW=gW*0.6;
+
+  const uid='s'+Math.random().toString(36).slice(2,7);
+  let h=`<defs>`;
+  colors.forEach((c,ci)=>{
+    h+=`<linearGradient id="${uid}c${ci}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${c}" stop-opacity=".95"/>
+      <stop offset="100%" stop-color="${c}" stop-opacity=".6"/>
+    </linearGradient>`;
+  });
+  h+=`</defs>`;
+
+  // grid
+  for(let i=0;i<=3;i++){
+    const y=pT+(cH/3)*i, v=yMax-(yMax/3)*i;
+    h+=`<line x1="${pL}" y1="${y}" x2="${W-pR}" y2="${y}" stroke="rgba(90,140,180,0.13)" stroke-width=".6"/>`;
+    const vs=v>=10000?(v/10000).toFixed(0)+'w':v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(0);
+    h+=`<text x="${pL-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#7ab8d4" font-family="Noto Sans SC">${vs}</text>`;
+  }
+
+  // bars
+  years.forEach((_,i)=>{
+    const x=pL+i*gW+(gW-bW)/2;
+    let stackY=pT+cH;
+    seriesData.forEach((ser,si)=>{
+      const bH=(ser[i]/yMax)*cH;
+      stackY-=bH;
+      h+=`<rect x="${x}" y="${stackY}" width="${bW}" height="${bH}" fill="url(#${uid}c${si})"
+        style="cursor:pointer"
+        onmouseenter="showTip(event,'${years[i]}年 ${labels[si]}','${ser[i]}','')"
+        onmouseleave="hideTip()"/>`;
+    });
+    h+=`<text x="${x+bW/2}" y="${H-6}" text-anchor="middle" font-size="10" fill="#7ab8d4" font-family="Noto Sans SC">${years[i]}</text>`;
+  });
+
+  // legend
+  const legY=pT-2;
+  let legX=pL;
+  // compute total legend width first, then center
+  const legItemW = 90; // fixed width per item regardless of label length
+  const totalLegW = labels.length * legItemW;
+  let legXStart = pL + (cW - totalLegW) / 2;
+  if(legXStart < pL) legXStart = pL;
+  labels.forEach((lbl,li)=>{
+    const lx = legXStart + li * legItemW;
+    h+=`<rect x="${lx}" y="${legY-7}" width="10" height="7" fill="${colors[li]}"/>`;
+    h+=`<text x="${lx+14}" y="${legY}" font-size="9.5" fill="#8dc8e8" font-family="Noto Sans SC">${lbl}</text>`;
+  });
+
+  svg.innerHTML=h;
+}
+
+// ═══════════════ RIGHT PANEL ═══════════════
+function renderRight(f){
+  const years=getYears();
+  const data=getSlice(f.data);
+  const mn=Math.min(...data), mx=Math.max(...data), avg=(data.reduce((a,b)=>a+b,0)/data.length);
+  const mnY=years[data.indexOf(mn)], mxY=years[data.indexOf(mx)];
+  const latest=data[data.length-1], latestY=years[years.length-1];
+
+  // mini sparkline SVG
+  const sW=260, sH=40;
+  const n=data.length;
+  const yMn=mn-(mx-mn)*0.2, yMx=mx+(mx-mn)*0.2;
+  const xS=i=>4+(i/(n-1))*(sW-8);
+  const yS=v=>sH-4-((v-yMn)/(yMx-yMn))*(sH-8);
+  let spLine=`M${xS(0)},${yS(data[0])}`;
+  data.forEach((v,i)=>{if(i>0)spLine+=` L${xS(i)},${yS(v)}`;});
+  let spArea=`M${xS(0)},${sH} `+data.map((v,i)=>`L${xS(i)},${yS(v)}`).join(' ')+` L${xS(n-1)},${sH} Z`;
+  const sparkSVG=`<svg width="${sW}" height="${sH}" viewBox="0 0 ${sW} ${sH}">
+    <defs><linearGradient id="spg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00e5ff" stop-opacity=".3"/><stop offset="100%" stop-color="#00e5ff" stop-opacity=".02"/></linearGradient></defs>
+    <path d="${spArea}" fill="url(#spg)"/>
+    <path d="${spLine}" stroke="#00e5ff" stroke-width="1.5" fill="none"/>
+    ${data.map((_,i)=>`<circle cx="${xS(i)}" cy="${yS(data[i])}" r="2.5" fill="#00e5ff"/>`).join('')}
+  </svg>`;
+
+  document.getElementById('rcol').innerHTML = `
+    <div class="rpnl">
+      <div class="rphd">统计分析</div>
+      <div class="rpbody">
+        <div class="stat-grid">
+          <div class="stat-item latest">
+            <div class="stat-lbl">最新值（${latestY}年）</div>
+            <div><span class="stat-val">${latest.toFixed(latest<10?2:0)}</span><span class="stat-unit">${f.unit}</span></div>
+          </div>
+          <div class="stat-item avg">
+            <div class="stat-lbl">近${yearCount}年均值</div>
+            <div><span class="stat-val">${avg.toFixed(avg<10?2:0)}</span><span class="stat-unit">${f.unit}</span></div>
+          </div>
+          <div class="stat-item max">
+            <div class="stat-lbl">最大值</div>
+            <div><span class="stat-val">${mx.toFixed(mx<10?2:0)}</span><span class="stat-unit">${f.unit}</span></div>
+            <div class="stat-year">${mxY}年</div>
+          </div>
+          <div class="stat-item min">
+            <div class="stat-lbl">最小值</div>
+            <div><span class="stat-val">${mn.toFixed(mn<10?2:0)}</span><span class="stat-unit">${f.unit}</span></div>
+            <div class="stat-year">${mnY}年</div>
+          </div>
+        </div>
+        <div class="spark-wrap">
+          <div class="spark-title">近${yearCount}年趋势</div>
+          ${sparkSVG}
+        </div>
+      </div>
+    </div>
+
+    <div class="rpnl">
+      <div class="rphd">因子说明</div>
+      <div class="rpbody">
+        <div class="desc-tag">数据解释</div>
+        <div class="desc-box">${f.def}</div>
+        <div class="src-row">
+          <span>数据来源</span>
+          <span class="src-badge">⬟ ${f.source}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rpnl">
+      <div class="rphd">变化分析</div>
+      <div class="rpbody" style="font-size:11px;color:var(--text2);line-height:1.9">
+        ${buildChangeAnalysis(data, years, f.unit)}
+      </div>
+    </div>
+  `;
+}
+
+function buildChangeAnalysis(data, years, unit){
+  const first=data[0], last=data[data.length-1];
+  const chg=((last-first)/first*100);
+  const dir=chg<0?'下降':'上升';
+  const color=chg<0?'var(--green)':'var(--orange)';
+  // yoy changes
+  const yoys=data.slice(1).map((v,i)=>({y:years[i+1],c:((v-data[i])/data[i]*100)}));
+  const minYoy=yoys.reduce((a,b)=>Math.abs(a.c)<Math.abs(b.c)?a:b);
+  const maxYoy=yoys.reduce((a,b)=>Math.abs(a.c)>Math.abs(b.c)?a:b);
+  return `
+    <div style="margin-bottom:8px">
+      ${years[0]}—${years[years.length-1]}年间，该因子累计
+      <span style="color:${color};font-weight:700">${dir} ${Math.abs(chg).toFixed(1)}%</span>，
+      由 ${first.toFixed(first<10?2:0)} 变化至 ${last.toFixed(last<10?2:0)} ${unit}。
+    </div>
+    <div style="margin-bottom:8px">年均变化幅度：
+      <span style="color:var(--blue);font-weight:600">${(chg/(data.length-1)).toFixed(2)}%</span>
+    </div>
+    <div style="color:var(--dim)">变幅最大年份：<span style="color:var(--gold)">${maxYoy.y}年</span>（${maxYoy.c>0?'+':''}${maxYoy.c.toFixed(1)}%）</div>
+  `;
+}
+
+// ═══════════════ MAIN RENDER ═══════════════
+function renderAll(){
+  const years=getYears();
+  const data=getSlice(curFactor.data);
+  const compSeries=curFactor.comps.series.map(s=>getSlice(s));
+
+  // title
+  document.getElementById('trend-sub').textContent = '— '+curFactor.name;
+  document.getElementById('comp-sub').textContent = '— '+curFactor.name;
+
+  // charts
+  setTimeout(()=>{
+    drawTrendLine('trend-svg', data, years, curFactor.unit, '#00e5ff');
+    drawStackBar('comp-svg', compSeries, curFactor.comps.labels, years, curFactor.comps.colors);
+    renderRight(curFactor);
+  }, 20);
+}
+
+// ═══════════════ YEAR RANGE ═══════════════
+function setYears(n, btn){
+  yearCount=n;
+  document.querySelectorAll('.yr-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderAll();
+}
+
+function updateYearRange(){
+  const from = parseInt(document.getElementById('yr-from').value);
+  const to   = parseInt(document.getElementById('yr-to').value);
+  // Ensure from < to
+  if(from >= to){
+    document.getElementById('yr-from').value = to - 1;
+    return;
+  }
+  // Sync top-bar yearCount to range length for right panel stats
+  yearCount = to - from + 1;
+  renderAll();
+}
+
+function getYears(){
+  const fromEl = document.getElementById('yr-from');
+  const toEl   = document.getElementById('yr-to');
+  if(!fromEl) return YEARS_ALL.slice(-yearCount);
+  const from = parseInt(fromEl.value);
+  const to   = parseInt(toEl.value);
+  return YEARS_ALL.filter(y => y >= from && y <= to);
+}
+
+function getSlice(arr){
+  const years = getYears();
+  const start = YEARS_ALL.indexOf(years[0]);
+  return arr.slice(start, start + years.length);
+}
+
+// ═══════════════ TOOLTIP ═══════════════
+function showTip(e, year, val, unit){
+  const t=document.getElementById('tooltip');
+  document.getElementById('tt-year').textContent=year;
+  document.getElementById('tt-val').textContent=val;
+  document.getElementById('tt-unit').textContent=unit;
+  t.style.display='block';
+  t.style.left=(e.clientX+14)+'px';
+  t.style.top=(e.clientY-10)+'px';
+}
+function hideTip(){ document.getElementById('tooltip').style.display='none'; }
+
+function tb(btn){ btn.closest('.tbg').querySelectorAll('.tb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); }
+
+// ═══════════════ SCALE ═══════════════
+function autoScale(){
+  const s=Math.min(window.innerWidth/1877, window.innerHeight/919);
+  document.body.style.transform='scale('+s+')';
+}
+autoScale();
+window.addEventListener('resize',()=>{ autoScale(); renderAll(); });
+
+// ═══════════════ INIT ═══════════════
+renderNav();
+renderAll();
+</script>
+</body>
+</html>
