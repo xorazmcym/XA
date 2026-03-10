@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1877">
+<title>贵州省碳监测数据分析共享服务平台</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#020d1a;--panel:rgba(3,22,48,0.88);
+  --blue:#00e5ff;--blue2:#1a9fd4;
+  --dim:#4a7a9b;--text:#cce8ff;--white:#fff;
+  --border:rgba(0,229,255,0.28);--border2:rgba(20,100,180,0.35);
+}
+body{
+  font-family:'Noto Sans SC',sans-serif;
+  background:var(--bg);color:var(--text);
+  width:1877px;height:919px;overflow:hidden;position:relative;
+  transform-origin:top left;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,200,255,0.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,200,255,0.025) 1px,transparent 1px);
+  background-size:44px 44px;pointer-events:none;z-index:0;
+}
+.hdr{display:flex;align-items:center;justify-content:space-between;height:54px;padding:0 22px;
+  background:linear-gradient(180deg,rgba(4,26,58,0.97),rgba(2,16,38,0.94));
+  border-bottom:1px solid var(--border);position:relative;z-index:10;}
+.hdr-logo{font-size:22px;font-weight:700;letter-spacing:2px;color:var(--white);text-shadow:0 0 20px rgba(0,229,255,0.55);}
+.hdr-nav{display:flex;gap:3px;}
+.ntab{padding:7px 22px;font-size:13px;letter-spacing:1px;color:var(--dim);border:1px solid var(--border2);background:rgba(8,35,72,0.5);cursor:pointer;}
+.ntab.on{color:var(--blue);border-color:var(--blue);background:rgba(0,200,255,0.08);box-shadow:0 0 14px rgba(0,229,255,0.25);}
+.avatar{width:36px;height:36px;border-radius:50%;border:1px solid var(--blue2);background:rgba(10,40,90,0.8);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--blue);}
+.bc{height:27px;padding:0 22px;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);background:rgba(2,12,30,0.65);border-bottom:1px solid rgba(20,90,160,0.18);position:relative;z-index:10;}
+.bc-lnk{color:var(--blue2);cursor:pointer;}
+.bc-lnk:hover{color:var(--blue);text-decoration:underline;}
+
+/* LAYOUT */
+.main{display:grid;grid-template-columns:460px 1fr 460px;height:calc(919px - 81px);position:relative;z-index:1;}
+.lcol,.rcol{display:flex;flex-direction:column;padding:8px;gap:8px;overflow:hidden;}
+.lcol{border-right:1px solid var(--border2);}
+.rcol{border-left:1px solid var(--border2);}
+
+/* PANEL */
+.pnl{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--border);position:relative;overflow:hidden;}
+.pnl::after{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--blue),transparent);opacity:.45;pointer-events:none;}
+
+/* PANEL HEADER — always 2 rows, titles never wrap */
+.phd{display:flex;flex-direction:column;padding:6px 10px;gap:5px;border-bottom:1px solid rgba(0,200,255,0.1);flex-shrink:0;}
+.phd-t{display:flex;align-items:center;gap:6px;}
+.phd-t > span{font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;}
+.pbar{width:3px;height:13px;flex-shrink:0;background:var(--blue);box-shadow:0 0 6px var(--blue);}
+.phd-c{display:flex;align-items:center;justify-content:flex-end;gap:5px;}
+.tbg,.tgg{display:flex;gap:2px;}
+.tb,.tg{padding:2px 8px;font-size:10px;border:1px solid var(--border2);background:transparent;color:#8dc8e8;cursor:pointer;font-family:'Noto Sans SC',sans-serif;white-space:nowrap;}
+.tb.on,.tg.on{color:var(--blue);border-color:var(--blue);background:rgba(0,229,255,0.07);}
+.yl{font-size:10px;color:#7aadce;padding:3px 10px 0;flex-shrink:0;}
+.ca{flex:1;min-height:0;padding:2px 8px 4px;}
+
+/* CENTER */
+.ccol{display:flex;flex-direction:column;overflow:hidden;height:100%;}
+.ctop{display:flex;align-items:center;justify-content:space-between;padding:8px 16px 7px;border-bottom:1px solid rgba(0,200,255,0.12);flex-shrink:0;}
+.ctitle{font-size:14px;font-weight:600;letter-spacing:1.5px;color:var(--white);text-shadow:0 0 14px rgba(0,229,255,0.5);}
+.ctrls{display:flex;align-items:center;gap:8px;}
+.sel{background:rgba(3,18,45,0.92);border:1px solid var(--blue2);color:var(--blue);font-size:12px;padding:4px 26px 4px 10px;cursor:pointer;outline:none;font-family:'Noto Sans SC',sans-serif;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2300e5ff' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
+
+/* MAP */
+.mwrap{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse 75% 65% at 50% 48%,rgba(0,50,125,0.18) 0%,transparent 100%);}
+#gzmap{width:82%;height:94%;filter:drop-shadow(0 0 18px rgba(0,150,255,0.38));cursor:pointer;}
+.pp{fill:rgba(8,52,130,0.48);stroke:rgba(0,190,255,0.5);stroke-width:.7;transition:fill .22s,stroke .22s;}
+.pp:hover{fill:rgba(18,95,200,0.7);stroke:var(--blue);stroke-width:1.2;}
+.pp.act{fill:rgba(0,85,215,0.62);stroke:var(--blue);stroke-width:1.4;filter:drop-shadow(0 0 9px rgba(0,229,255,0.55));}
+.pl{font-size:11px;fill:rgba(185,225,255,0.92);font-family:'Noto Sans SC',sans-serif;pointer-events:none;text-anchor:middle;dominant-baseline:middle;}
+.pl.act{fill:var(--blue);font-weight:700;font-size:12px;}
+.pl.sm{font-size:9.5px;}
+.cov{position:absolute;top:50%;left:50%;transform:translate(-50%,-56%);text-align:center;pointer-events:none;}
+.cov-nm{font-size:17px;font-weight:700;letter-spacing:2px;color:var(--white);text-shadow:0 0 18px rgba(0,229,255,0.9),0 0 35px rgba(0,229,255,0.4);}
+.cov-tag{font-size:10px;color:var(--dim);margin-top:5px;background:rgba(0,12,40,0.75);border:1px solid rgba(0,180,255,0.2);padding:2px 12px;display:inline-block;}
+
+/* METRICS — large and legible */
+.mbar{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);height:176px;border-top:1px solid rgba(0,200,255,0.18);flex-shrink:0;margin-top:auto;}
+.mc{display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-right:1px solid rgba(0,140,210,0.15);border-bottom:1px solid rgba(0,140,210,0.15);background:rgba(0,22,60,0.38);}
+.mc:nth-child(3),.mc:nth-child(6){border-right:none;}
+.mc:nth-child(4),.mc:nth-child(5),.mc:nth-child(6){border-bottom:none;}
+.ml{font-size:15px;font-weight:500;color:#c5e8ff;letter-spacing:.5px;}
+.mv-wrap{text-align:right;}
+.mv{font-size:38px;font-weight:700;color:rgba(0,229,255,0.6);text-shadow:0 0 16px rgba(0,229,255,0.35);letter-spacing:.5px;}
+.mu{font-size:14px;color:#8dcce8;margin-left:4px;}
+.mn{font-size:13px;color:#7ec4de;display:block;margin-top:3px;letter-spacing:.3px;}
+
+/* LEGEND */
+.leg{display:flex;gap:12px;padding:3px 10px;font-size:10px;color:#8dc8e8;flex-shrink:0;}
+.lsq{width:10px;height:8px;display:inline-block;margin-right:3px;vertical-align:middle;}
+
+/* SCAN */
+@keyframes scan{0%{transform:translateY(-3%);opacity:.45}100%{transform:translateY(108%);opacity:0}}
+.scan{position:fixed;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(0,200,255,0.22),transparent);animation:scan 9s linear infinite;pointer-events:none;z-index:200;}
+</style>
+</head>
+<body>
+<div class="scan"></div>
+<div class="hdr">
+  <div class="hdr-logo">贵州省碳监测数据分析共享服务平台</div>
+  <div class="hdr-nav">
+    <div class="ntab on">区域碳排放</div>
+    <div class="ntab">行业碳排放</div>
+    <div class="ntab">企业碳排放</div>
+  </div>
+  <div class="avatar">TOT</div>
+</div>
+<div class="bc">
+  <span style="color:var(--blue2);font-size:13px">⌂</span>
+  <span class="bc-lnk" onclick="goBack()">区域碳排放监测</span>
+  <span style="color:var(--dim)">›</span>
+  <span class="bc-lnk" onclick="goBack()">贵州省</span>
+  <span style="color:var(--dim)">›</span>
+  <span id="bc-city">贵阳市</span>
+</div>
+<div class="main">
+<div class="lcol">
+  <div class="pnl">
+    <div class="phd">
+      <div class="phd-t"><div class="pbar"></div><span>电力平均二氧化碳排放因子（<span id="lt1">贵阳</span>）</span></div>
+      <div class="phd-c"><div class="tbg"><button class="tb" onclick="tb(this)">月</button><button class="tb" onclick="tb(this)">季</button><button class="tb on" onclick="tb(this)">年</button></div></div>
+    </div>
+    <div class="yl">tCO₂/MWh</div>
+    <div class="ca"><svg id="c1" width="100%" height="100%"></svg></div>
+  </div>
+  <div class="pnl">
+    <div class="phd">
+      <div class="phd-t"><div class="pbar"></div><span>单位度电碳排放</span></div>
+      <div class="phd-c"><div class="tbg"><button class="tb" onclick="tb(this)">月</button><button class="tb" onclick="tb(this)">季</button><button class="tb on" onclick="tb(this)">年</button></div></div>
+    </div>
+    <div class="yl">tCO₂/MWh</div>
+    <div class="ca"><svg id="c2" width="100%" height="100%"></svg></div>
+  </div>
+  <div class="pnl">
+    <div class="phd">
+      <div class="phd-t"><div class="pbar"></div><span>碳排放强度</span></div>
+      <div class="phd-c"><div class="tbg"><button class="tb" onclick="tb(this)">月</button><button class="tb" onclick="tb(this)">季</button><button class="tb on" onclick="tb(this)">年</button></div></div>
+    </div>
+    <div class="yl">万吨/亿元</div>
+    <div class="ca"><svg id="c3" width="100%" height="100%"></svg></div>
+  </div>
+</div>
+
+<div class="ccol">
+  <div class="ctop">
+    <div class="ctitle" id="ctitle">贵阳市数据总览</div>
+    <div class="ctrls">
+      <select class="sel"><option>2025年</option><option>2024年</option><option>2023年</option></select>
+      <select class="sel" id="citySel" onchange="switchCity(this.value)">
+        <option>贵阳市</option><option>遵义市</option><option>六盘水市</option>
+        <option>安顺市</option><option>毕节市</option><option>铜仁市</option>
+        <option>黔东南苗族侗族自治州</option><option>黔南布依族苗族自治州</option>
+        <option>黔西南布依族苗族自治州</option>
+      </select>
+    </div>
+  </div>
+  <div class="mwrap">
+
+<svg id="gzmap" viewBox="0 0 900 640" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="glo">
+          <feGaussianBlur in="SourceAlpha" stdDeviation="3.5" result="b"/>
+          <feFlood flood-color="#00e5ff" flood-opacity="0.45" result="c"/>
+          <feComposite in="c" in2="b" operator="in" result="s"/>
+          <feMerge><feMergeNode in="s"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- ─────────────────────────────────────────
+           遵义市 — north, large, irregular
+      ───────────────────────────────────────── -->
+      <path id="pp-遵义市" class="pp" onclick="switchCity('遵义市')"
+        d="
+          M318,36  L336,30  L358,28  L380,24  L402,22  L424,22  L446,25
+          L465,28  L482,26  L496,30  L512,34  L524,32  L538,36  L550,42
+          L558,52  L563,64  L566,78  L562,92  L564,108 L560,122 L552,134
+          L542,144 L530,152 L516,158 L500,162 L484,164 L468,168 L452,174
+          L436,178 L418,180 L400,182 L382,180 L364,176 L348,170 L334,162
+          L322,152 L312,140 L305,126 L300,112 L298,96  L300,80  L306,65
+          L312,50  Z
+        "/>
+
+      <!-- ─────────────────────────────────────────
+           铜仁市 — northeast
+      ───────────────────────────────────────── -->
+      <path id="pp-铜仁市" class="pp" onclick="switchCity('铜仁市')"
+        d="
+          M562,92  L580,84  L600,78  L622,72  L645,68  L668,66  L690,70
+          L710,76  L728,86  L742,98  L752,112 L758,128 L760,144 L757,160
+          L750,175 L738,188 L722,198 L706,204 L688,206 L670,202 L652,194
+          L636,182 L622,170 L610,158 L600,144 L593,130 L587,116 L578,104
+          L568,96  Z
+        "/>
+
+      <!-- ─────────────────────────────────────────
+           毕节市 — northwest, large
+      ───────────────────────────────────────── -->
+      <path id="pp-毕节市" class="pp" onclick="switchCity('毕节市')"
+        d="
+          M40,182  L62,170  L88,158  L116,150 L144,145 L170,142 L196,140
+          L220,142 L242,148 L260,158 L274,170 L284,184 L290,200 L292,216
+          L288,232 L280,246 L268,258 L254,268 L238,275 L220,278 L200,278
+          L180,274 L162,266 L146,255 L132,242 L120,228 L110,213 L102,198
+          L96,183  L84,178  L62,182  Z
+        "/>
+
+      <!-- ─────────────────────────────────────────
+           贵阳市 — center (smaller)
+      ───────────────────────────────────────── -->
+      <path id="pp-贵阳市" class="pp act" onclick="switchCity('贵阳市')"
+        d="
+          M400,182 L418,180 L436,184 L452,192 L464,204 L472,220
+          L474,236 L472,252 L464,266 L452,278 L438,286 L422,292
+          L406,294 L390,292 L374,285 L362,274 L354,260 L350,245
+          L350,230 L355,214 L364,200 L376,190 Z
+        "/>
+
+      <!-- ─────────────────────────────────────────
+           黔东南苗族侗族自治州 — east, large
+      ───────────────────────────────────────── -->
+      <path id="pp-黔东南苗族侗族自治州" class="pp" onclick="switchCity('黔东南苗族侗族自治州')"
+        d="
+          M610,158 L628,172 L644,186 L658,200 L668,214 L674,230
+          L676,246 L674,262 L668,278 L658,293 L645,306 L630,317
+          L613,326 L595,332 L576,336 L557,337 L539,334 L522,327
+          L508,317 L497,304 L490,290 L486,276 L486,262 L490,248
+          L498,234 L508,222 L520,212 L534,204 L548,198 L563,195
+          L578,194 L593,192 L606,184 Z
+        "/>
+
+      <!-- ─────────────────────────────────────────
+           六盘水市 — west
+      ───────────────────────────────────────── -->
+      <path id="pp-六盘水市" class="pp" onclick="switchCity('六盘水市')"
+        d="
+          M100,280 L124,272 L150,265 L175,260 L198,258 L220,260
+          L238,266 L253,276 L264,290 L270,306 L270,322 L264,338
+          L254,352 L240,363 L224,370 L206,374 L188,374 L170,370
+          L154,362 L140,350 L128,336 L118,320 L110,303 Z
+        "/>
+
+      <!-- ─────────────────────────────────────────
+           安顺市 — center-west
+      ───────────────────────────────────────── -->
+      <path id="pp-安顺市" class="pp" onclick="switchCity('安顺市')"
+        d="
+          M270,258 L288,248 L306,242 L324,238 L342,238 L358,244
+          L370,254 L378,267 L381,282 L378,297 L371,311 L360,322
+          L346,330 L330,336 L313,338 L297,334 L283,326 L272,314
+          L264,300 L262,285 Z
+        "/>
+
+      <!-- ─────────────────────────────────────────
+           黔南布依族苗族自治州 — south-center, large
+      ───────────────────────────────────────── -->
+      <path id="pp-黔南布依族苗族自治州" class="pp" onclick="switchCity('黔南布依族苗族自治州')"
+        d="
+          M378,296 L392,290 L408,288 L424,290 L440,296 L454,306
+          L464,320 L470,336 L472,352 L470,368 L464,384 L454,397
+          L440,408 L424,416 L407,422 L389,424 L371,422 L354,416
+          L340,406 L328,394 L320,380 L316,364 L316,348 L320,333
+          L328,318 L340,306 L354,296 L368,290 Z
+        "/>
+
+      <!-- ─────────────────────────────────────────
+           黔西南布依族苗族自治州 — southwest
+      ───────────────────────────────────────── -->
+      <path id="pp-黔西南布依族苗族自治州" class="pp" onclick="switchCity('黔西南布依族苗族自治州')"
+        d="
+          M170,372 L190,368 L212,368 L232,372 L250,380 L265,392
+          L275,406 L280,422 L280,438 L275,454 L264,468 L249,480
+          L232,490 L213,496 L193,498 L173,496 L154,489 L137,479
+          L122,466 L111,451 L105,434 L103,417 L107,400 L116,386
+          L130,376 L150,371 Z
+        "/>
+
+      <!-- ──── LABELS ──── -->
+      <text class="pl" id="lbl-遵义市" x="430" y="103">遵义市</text>
+      <text class="pl" id="lbl-铜仁市" x="672" y="138">铜仁市</text>
+      <text class="pl" id="lbl-毕节市" x="175" y="213">毕节市</text>
+      <text class="pl act" id="lbl-贵阳市" x="413" y="237">贵阳市</text>
+      <text class="pl sm" id="lbl-黔东南苗族侗族自治州" x="582" y="266">黔东南苗族侗族自治州</text>
+      <text class="pl" id="lbl-六盘水市" x="185" y="318">六盘水市</text>
+      <text class="pl" id="lbl-安顺市" x="323" y="290">安顺市</text>
+      <text class="pl sm" id="lbl-黔南布依族苗族自治州" x="394" y="362">黔南布依族苗族自治州</text>
+      <text class="pl sm" id="lbl-黔西南布依族苗族自治州" x="192" y="435">黔西南布依族苗族自治州</text>
+
+      <!-- Compass -->
+      <g transform="translate(862,34)">
+        <line x1="0" y1="-15" x2="0" y2="15" stroke="rgba(0,180,255,0.38)" stroke-width="1"/>
+        <line x1="-15" y1="0" x2="15" y2="0" stroke="rgba(0,180,255,0.38)" stroke-width="1"/>
+        <polygon points="0,-15 -3.5,-6 0,-9 3.5,-6" fill="rgba(0,210,255,0.65)"/>
+        <text x="0" y="-18" text-anchor="middle" font-size="9" fill="rgba(0,200,255,0.6)" font-family="Noto Sans SC">N</text>
+      </g>
+    </svg>
+    <div class="cov">
+      <div class="cov-nm" id="cov-nm">贵阳市</div>
+      <div class="cov-tag">暂无地市级数据</div>
+    </div>
+  </div>
+  <div class="mbar">
+    <div class="mc"><div class="ml">全社会碳排放</div><div class="mv-wrap"><span class="mv">--</span><span class="mu">万吨</span><span class="mn">地市级数据待接入</span></div></div>
+    <div class="mc"><div class="ml">能源活动碳排放</div><div class="mv-wrap"><span class="mv">--</span><span class="mu">万吨</span><span class="mn">地市级数据待接入</span></div></div>
+    <div class="mc"><div class="ml">工业生产过程碳排放</div><div class="mv-wrap"><span class="mv">--</span><span class="mu">万吨</span><span class="mn">地市级数据待接入</span></div></div>
+    <div class="mc"><div class="ml">发电碳排放</div><div class="mv-wrap"><span class="mv">--</span><span class="mu">万吨</span><span class="mn">地市级数据待接入</span></div></div>
+    <div class="mc"><div class="ml">购入碳排放</div><div class="mv-wrap"><span class="mv">--</span><span class="mu">万吨</span><span class="mn">地市级数据待接入</span></div></div>
+    <div class="mc"><div class="ml">输出碳排放</div><div class="mv-wrap"><span class="mv">--</span><span class="mu">万吨</span><span class="mn">地市级数据待接入</span></div></div>
+  </div>
+</div>
+<div class="rcol">
+  <div class="pnl">
+    <div class="phd">
+      <div class="phd-t"><div class="pbar"></div><span>全社会碳排放趋势分析</span></div>
+      <div class="phd-c">
+        <div class="tgg"><button class="tg on" onclick="tg(this)">分类别</button><button class="tg" onclick="tg(this)">分能源品种</button></div>
+        <div class="tbg"><button class="tb" onclick="tb(this)">月</button><button class="tb" onclick="tb(this)">季</button><button class="tb on" onclick="tb(this)">年</button></div>
+      </div>
+    </div>
+    <div class="leg"><span><span class="lsq" style="background:#1565c0"></span>能源活动碳排放</span><span><span class="lsq" style="background:rgba(30,136,229,0.45)"></span>工业生产过程碳排放</span></div>
+    <div class="yl">万吨</div>
+    <div class="ca"><svg id="r1" width="100%" height="100%"></svg></div>
+  </div>
+  <div class="pnl">
+    <div class="phd">
+      <div class="phd-t"><div class="pbar"></div><span>发电碳排放趋势分析</span></div>
+      <div class="phd-c"><div class="tbg"><button class="tb" onclick="tb(this)">月</button><button class="tb" onclick="tb(this)">季</button><button class="tb on" onclick="tb(this)">年</button></div></div>
+    </div>
+    <div class="yl">万吨</div>
+    <div class="ca"><svg id="r2" width="100%" height="100%"></svg></div>
+  </div>
+  <div class="pnl">
+    <div class="phd">
+      <div class="phd-t"><div class="pbar"></div><span>区域电力间接碳排放趋势分析</span></div>
+      <div class="phd-c"><div class="tbg"><button class="tb" onclick="tb(this)">月</button><button class="tb" onclick="tb(this)">季</button><button class="tb on" onclick="tb(this)">年</button></div></div>
+    </div>
+    <div class="yl">万吨</div>
+    <div class="ca"><svg id="r3" width="100%" height="100%"></svg></div>
+  </div>
+</div>
+</div>
+
+<script>
+const YRS=['2015','2016','2017','2018','2019','2020','2021','2022','2023','2024'];
+const D={
+  c1:[0.65,0.72,0.68,0.75,0.70,0.62,0.58,0.55,0.60,0.67],
+  c2:[0.82,0.90,0.88,0.95,1.0,0.85,0.78,0.72,0.68,0.62],
+  c3:[0.75,0.92,0.85,0.82,0.85,0.78,0.68,0.55,0.45,0.85],
+  r1a:[18000,20000,21500,22000,23500,24000,25000,26000,27000,25000],
+  r1b:[2200,2400,2500,2600,2700,2800,2900,3000,3100,1200],
+  r2:[5000,6200,7100,8300,9100,9600,10800,11500,12200,4800],
+  r3:[800,1200,1500,1800,2200,2600,3000,3200,3400,2800],
+};
+function drawLine(id,data,yMin,yMax,color){
+  const el=document.getElementById(id);if(!el)return;
+  const W=el.parentElement.clientWidth||400,H=el.parentElement.clientHeight||100;
+  el.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const pL=32,pR=6,pT=8,pB=20,cW=W-pL-pR,cH=H-pT-pB,n=data.length;
+  const xS=i=>pL+(i/(n-1))*cW,yS=v=>pT+cH-((v-yMin)/(yMax-yMin))*cH;
+  const uid='a'+Math.random().toString(36).slice(2,8);
+  let h=`<defs><linearGradient id="${uid}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="${color}" stop-opacity=".2"/>
+    <stop offset="100%" stop-color="${color}" stop-opacity=".01"/>
+  </linearGradient></defs>`;
+  for(let i=0;i<=4;i++){
+    const y=pT+(cH/4)*i,v=yMax-((yMax-yMin)/4)*i;
+    h+=`<line x1="${pL}" y1="${y}" x2="${W-pR}" y2="${y}" stroke="rgba(90,140,180,0.15)" stroke-width=".6"/>`;
+    h+=`<text x="${pL-4}" y="${y+3.5}" text-anchor="end" font-size="10" fill="#7ab8d4" font-family="Noto Sans SC">${v.toFixed(1)}</text>`;
+  }
+  let area=`M${xS(0)},${pT+cH}`;data.forEach((v,i)=>area+=` L${xS(i)},${yS(v)}`);
+  area+=` L${xS(n-1)},${pT+cH} Z`;
+  h+=`<path d="${area}" fill="url(#${uid})"/>`;
+  let line=`M${xS(0)},${yS(data[0])}`;data.forEach((v,i)=>{if(i>0)line+=` L${xS(i)},${yS(v)}`;});
+  h+=`<path d="${line}" stroke="${color}" stroke-width="1.5" fill="none"/>`;
+  data.forEach((v,i)=>{
+    h+=`<circle cx="${xS(i)}" cy="${yS(v)}" r="2.5" fill="${color}" opacity=".88"/>`;
+    if(i%2===0)h+=`<text x="${xS(i)}" y="${H-2}" text-anchor="middle" font-size="9.5" fill="#7ab8d4" font-family="Noto Sans SC">${YRS[i]}年</text>`;
+  });
+  el.innerHTML=h;
+}
+function drawBar(id,d1,d2,yMax){
+  const el=document.getElementById(id);if(!el)return;
+  const W=el.parentElement.clientWidth||400,H=el.parentElement.clientHeight||100;
+  el.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const pL=36,pR=4,pT=8,pB=20,cW=W-pL-pR,cH=H-pT-pB,n=d1.length;
+  const gW=cW/n,bW=d2?gW*.33:gW*.54;
+  const uid='b'+Math.random().toString(36).slice(2,8);
+  let h=`<defs>
+    <linearGradient id="${uid}1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2196f3" stop-opacity=".9"/>
+      <stop offset="100%" stop-color="#0d47a1" stop-opacity=".9"/>
+    </linearGradient>
+    <linearGradient id="${uid}2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1565c0" stop-opacity=".52"/>
+      <stop offset="100%" stop-color="#0a2a6e" stop-opacity=".52"/>
+    </linearGradient></defs>`;
+  for(let i=0;i<=4;i++){
+    const y=pT+(cH/4)*i,v=yMax-(yMax/4)*i;
+    h+=`<line x1="${pL}" y1="${y}" x2="${W-pR}" y2="${y}" stroke="rgba(90,140,180,0.15)" stroke-width=".6"/>`;
+    const lbl=v>=10000?(v/10000).toFixed(0)+'w':v>=1000?(v/1000).toFixed(0)+'k':v;
+    h+=`<text x="${pL-4}" y="${y+3.5}" text-anchor="end" font-size="10" fill="#7ab8d4" font-family="Noto Sans SC">${lbl}</text>`;
+  }
+  d1.forEach((v,i)=>{
+    const x=pL+i*gW,h1=(v/yMax)*cH;
+    if(d2){const h2=(d2[i]/yMax)*cH;
+      h+=`<rect x="${x+gW*.05}" y="${pT+cH-h1}" width="${bW}" height="${h1}" fill="url(#${uid}1)"/>`;
+      h+=`<rect x="${x+gW*.05+bW+1.5}" y="${pT+cH-h2}" width="${bW}" height="${h2}" fill="url(#${uid}2)"/>`;
+    }else{h+=`<rect x="${x+gW*.18}" y="${pT+cH-h1}" width="${bW}" height="${h1}" fill="url(#${uid}1)"/>`;}
+    if(i%2===0)h+=`<text x="${x+gW/2}" y="${H-2}" text-anchor="middle" font-size="9.5" fill="#7ab8d4" font-family="Noto Sans SC">${YRS[i]}年</text>`;
+  });
+  el.innerHTML=h;
+}
+function initCharts(){
+  drawLine('c1',D.c1,0,.9,'#00e5ff');drawLine('c2',D.c2,0,1.1,'#00e5ff');drawLine('c3',D.c3,0,1.1,'#00e5ff');
+  drawBar('r1',D.r1a,D.r1b,30000);drawLine('r2',D.r2,0,14000,'#00e5ff');drawBar('r3',D.r3,null,4000);
+}
+let cur='贵阳市';
+const cityMaps={
+  '贵阳市':null,'遵义市':null,'六盘水市':null,'安顺市':null,'毕节市':null,
+  '铜仁市':null,'黔东南苗族侗族自治州':null,'黔南布依族苗族自治州':null,'黔西南布依族苗族自治州':null
+};
+function switchCity(city){
+  if(city===cur)return;
+  document.getElementById('pp-'+cur)?.classList.remove('act');
+  document.getElementById('lbl-'+cur)?.classList.remove('act');
+  cur=city;
+  document.getElementById('pp-'+city)?.classList.add('act');
+  document.getElementById('lbl-'+city)?.classList.add('act');
+  document.getElementById('ctitle').textContent=city+'数据总览';
+  document.getElementById('cov-nm').textContent=city;
+  document.getElementById('bc-city').textContent=city;
+  document.getElementById('citySel').value=city;
+  const short=city.replace('市','').replace('苗族侗族自治州','').replace('布依族苗族自治州','').replace('州','');
+  document.getElementById('lt1').textContent=short;
+}
+function tb(btn){btn.closest('.tbg').querySelectorAll('.tb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+function tg(btn){btn.closest('.tgg').querySelectorAll('.tg').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+function goBack(){alert('返回贵州省区域碳排放总览页');}
+window.addEventListener('load',()=>setTimeout(initCharts,80));
+window.addEventListener('resize',()=>{autoScale();initCharts();});
+function autoScale(){
+  var s=Math.min(window.innerWidth/1877,window.innerHeight/919);
+  document.body.style.transform='scale('+s+')';
+}
+autoScale();
+</script>
+</body>
+</html>
